@@ -38,12 +38,12 @@
 				; specializations
 				(cond (frame-of frame-name)
 						(conj ((frame-of frame-name) :specializations (first stuff)))
-					:t 	(list (first stuff)))
+					:t 	(cond (empty? stuff) (list) :t (list (first stuff))))
+
 				; abstractions
 				(cond (frame-of frame-name)
 						(conj ((frame-of frame-name) :abstractions (second stuff)))
-					:t 	(list (second stuff)))
-				;;(second stuff)
+					:t 	(cond (empty? stuff) (list) :t (list (second stuff))))
 ))))
 
 (defn get-specializations [frame-name]
@@ -95,18 +95,13 @@
 (defn get-feature
 	"looks first in the native frame, then abstractions, then specializations, returning the first found"
  [frame-name feature-name]
+	(println "x"  (frame-name frame-of) )
 	(cond (feature-name (:features (frame-name frame-of)) )
 		; look local
 		 (feature-name (:features (frame-name frame-of))) 
 		:t
 		; look in abstractions and specializations
 		(and 
-			;(not (empty? (map (fn [fr-name] 
-			;			(println "DEBUG2 frame:" fr-name " feature " feature-name)
-			;			(println "DEBUG3" (get-feature fr-name feature-name))
-			;			(get-feature fr-name feature-name)
-			;					)
-			;	 (:abstractions (feature-name (frame-name frame-of))))) )
 			:t
 			;; for the list of frames in the specializations list, try to get the feature there recursively
 			(map (fn [fr-name]  (get-feature fr-name feature-name))
@@ -159,6 +154,10 @@
 (print-frame :new-director)
 (println "------------_________________--")
 (println "------------_________________--")
-(println "title?" (get-feature :new-director :title))
-(println "lname?" (get-feature :new-director :lname))
-(println "dbid?" (get-feature :new-director :dbid))
+(println "_________________")
+(println "title?:" (get-feature :new-director :title))
+(println "_________________")
+(println "lname?:" (get-feature :new-director :lname))
+(println "_________________")
+(println "dbid?:" (get-feature :new-director :dbid))
+(println "_________________")
