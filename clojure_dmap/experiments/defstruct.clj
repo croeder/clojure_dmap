@@ -8,3 +8,13 @@
 (def fname ":a")
 (println (j fname))
 
+(println j)
+(println (assoc j :a "new-a"))
+
+(println j)
+
+; can you use these like maps with tags first?
+(println "---------------------------")
+(println (:a j))
+
+(println (:x j))
