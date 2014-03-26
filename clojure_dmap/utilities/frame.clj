@@ -96,8 +96,6 @@
 	;;((frame-of frame-name) slot-name)
 )
 
-
-;;; TODO ---> the deeper cases are returning because an empty list is true
 (defn get-feature
 	"looks first in the native frame, then abstractions, then specializations, returning the first found"
  [frame-name feature-name]
