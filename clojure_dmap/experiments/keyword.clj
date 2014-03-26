@@ -1,0 +1,7 @@
+(println :foo)
+(def x :foo)
+(println x)
+(println (symbol? :foo))
+(println (symbol? x))
+(println (keyword? :foo))
+(println (keyword? x))
