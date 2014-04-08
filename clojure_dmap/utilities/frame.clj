@@ -4,21 +4,48 @@
 ;; of an inheritance hierarchy.
 ;; This module includes an uber-hash holding all the frames.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use '[clojure.set :only [difference]])
 (load-file "arities.clj")
 (def frame-of {})
 
+
 ;; TODO 
 ;; - abstractions and specializatons are linked lists, you only go up or down one level and then that frame tells you the next level up/down
-;; - desperately need a testing framework
 ;; - switch from defstructs to the new thing...records
-;; - features not slots
-;; - *** (nil) for specialization lists instead of ()
 
 (defstruct frame :name :features :specializations :abstractions)
 
 
-;; stuff is specializations then abstractions
-(defn create-frame	[frame-name slot-list value-list & stuff] 
+(defn create-frame	
+	"Creates a frame as a struct with a :name and a lsit of :feature.  :specializations and :abstractions are part of a dynamic inheritance hierarchy. Their values are lists of symbols to other frames.  stuff is a list of two lists specializations then abstractsion "
+	{:test #(do 
+				(def a (create-frame :test-frame-a (list :slot1 :slot2 :slot3) (list "a" "b" "c") (list :spec1 :spec2) (list :abs1 :abs2)))
+				(def x (:test-frame-a frame-of))
+				(assert  (not (nil? x)))
+				(assert (= (:name x) :test-frame-a))
+				(assert (= (:features x) { :slot1 "a" :slot2 "b"  :slot3 "c" }))
+				(assert (= (:specializations x) (list :spec1 :spec2)))
+				(assert (= (:abstractions x) (list :abs1 :abs2)))
+
+				(def b (create-frame :test-frame-b (list) (list) (list) (list)))
+				(def y (:test-frame-b frame-of))
+				(assert (not (nil? y)))
+				(assert (= (:name y) :test-frame-b))
+				(assert (= (:features y) {}))
+				(assert (= (:specializations y) (list)))
+				(assert (= (:abstractions y) (list)))
+
+			; maybe not the best place for these tests...
+				(create-frame :new-person (list :fname :lname :mi) (list "Bob" "Jones" "X") (list) (list))
+				(create-frame :base-thing (list :dbid :mode) (list 123 :test) (list) (list))
+				(create-frame :new-director (list :company :title :salary) (list "The" "Director" 1000000) (list :new-person) (list :base-thing))
+				;;(assert (= "Jones" (get-feature :new-director :lname)))
+				;;(assert (= "Director" (get-feature :new-director :title)))
+				;;(assert (= 123 (get-feature :new-director :dbid)))
+				;;(println "spec" (get-specializations :new-director))
+				
+			)}
+	[frame-name slot-list value-list specializations abstractions] 
 		(def frame-of 
 			(assoc frame-of frame-name 
 			  (struct frame  
@@ -38,29 +65,51 @@
 				; specializations
 				(cond (frame-of frame-name)
 						(conj ((frame-of frame-name) :specializations 
-							;(first stuff)
-					 		(cond (empty? stuff) (list) :t (list (first stuff)))
+						;;(conj (:specializations (frame-of frame-name)
+					 		(cond (empty? specializations) (list) :t specializations)
 						))
-					:t 	(cond (empty? stuff) (list) :t (list (first stuff))))
+					:t 	(cond (empty? specializations) (list) :t specializations))
 
 				; abstractions
 				(cond (frame-of frame-name)
 						(conj ((frame-of frame-name) :abstractions 
-							;(second stuff)
-					 		(cond (empty? stuff) (list) :t (list (second stuff)))
+						;;(conj (:abstractions (frame-of frame-name) 
+					 		(cond (empty? abstractions) (list) :t abstractions )
 						))
-					:t 	(cond (empty? stuff) (list) :t (list (second stuff))))
+					:t 	(cond (empty? abstractions) (list) :t abstractions ))
 ))))
 
-(defn get-specializations [frame-name]
+(defn get-specializations 
+	"returns a list of symbols to the frames that are specializations of this one"
+	{:test #(do 
+		(def a (create-frame :test-frame-1 (list :slot1 :slot2 :slot3) (list "1" "2" "3") (list :spec1 :spec2) (list :abs1 :abs2)))
+		(assert (= (get-specializations :test-frame-1) (list :spec1 :spec2)))
+	)}
+	[frame-name]
 	(:specializations (frame-of frame-name) ))
-	;;(cond (not (nil? (frame-of frame-name))) ((frame-of frame-name) :specializations)))
 
-(defn get-abstractions [frame-name]
+
+(defn get-abstractions 
+	"returns a list of symbols to the frames that are abstractions this one is based on"
+	{:test #(do 
+		(create-frame :test-frame-2 (list :slot1 :slot2 :slot3) (list "1" "2" "3") (list :spec1 :spec2) (list :abs1 :abs2))
+		(assert (= (get-abstractions :test-frame-2) (list :abs1 :abs2)))
+	)}
+	[frame-name]
 	(:abstractions (frame-of frame-name) ))
-	;;(cond (not (nil? (frame-of frame-name))) ((frame-of frame-name) :abstractions) ))
 
-(defn add-specialization [frame-name spec-name]
+
+(defn add-specialization 
+	"add the name of a frame that is a specialization "
+	{:test #(do
+		(create-frame :test-frame-3 (list) (list) (list) (list))
+		(create-frame :spec-frame-1 (list) (list) (list) (list))
+		(add-specialization :test-frame-3 :spec-frame-1)
+		(println  "testing add-spedc" (first (get-specializations :test-frame-3)) :spec-frame-1)
+		(assert (=  (first (get-specializations :test-frame-3)) :spec-frame-1))
+		(assert (=  (first (get-abstractions :spec-frame-1)) :test-frame-3))
+	)}
+	[frame-name spec-name]
 
 	; add the spec to the frame-name frame
 	(def frame-of
@@ -75,7 +124,7 @@
 
 	; first check to make sure you don't have a nil frame-of for spec-name
 	(cond (nil? (frame-of  spec-name))
-		(create-frame spec-name (list) (list) ))
+		(create-frame spec-name (list) (list) (list) (list) ))
 	; main work
 	(def frame-of
 		(assoc frame-of spec-name
@@ -86,7 +135,7 @@
 					; wtf is spec-name null here or specializations
 					;;;;;	(conj ((frame-of spec-name) :specializations) frame-name)
 					:t (println "YOOOO! you got it"))
-					))))
+					))) )
 
 (defn add-abstraction [frame-name abs-name]
 	(add-specialization abs-name frame-name))
@@ -96,71 +145,95 @@
 	;;((frame-of frame-name) slot-name)
 )
 
-(defn get-feature
-	"looks first in the native frame, then abstractions, then specializations, returning the first found"
- [frame-name feature-name]
-	(cond (feature-name (:features (frame-name frame-of)) )
-			(feature-name (:features (frame-name frame-of))) 
-		  :t
-			(and 
-				(map (fn [fr-name] 	(get-feature fr-name feature-name))
-				 	(get-specializations frame-name ))
-				(map (fn [fr-name]  (get-feature fr-name feature-name))
-			 		(get-abstractions frame-name ))  )))
-
-(defn print-frame [frame-name]
+(defn print-frame 
+	"this is disgusting. It climbs the hierarchy and recurses down making an infinite loop: FIXME TODO"
+	[frame-name]
 	(cond (and 
 		(not (nil? frame-name))
 		(not (nil? (frame-name frame-of))) )
 	 (do
 		(println "print-frame frame name:" frame-name " contents:" (frame-name frame-of))
 		(doseq [s (get-specializations frame-name)] (print-frame s))
-		(doseq [a (get-abstractions frame-name)] (print-frame a)) )))
+		(doseq [a (get-abstractions frame-name)] (print-frame a)) )) ) 
+
+(defn find-ancestors
+	"Go up the abstraction hierarchy and collect ancestors/abstractions"
+	{:test #(do
+		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list) (list))
+		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list) (list))
+		(create-frame :abs-frame-2 (list :abs-slot-1 :abs-slot-2) (list "m" "n") (list) (list))
+		(find-ancestors :abs-frame-2)
+	)}
+	[frame-name ]
+	(let [ancestor-set #{} ]
+		(loop [frame-list #{frame-name} visited-set #{nil} ]
+			(println "debug2:" frame-name visited-set "frame-list:" frame-list)
+			(map (fn [x] (do  
+					(def ancestor-set (conj ancestor-set (get-abstractions x)) )))
+			 	frame-list)
+			; recur on the built-up abstractions minus the visited-set
+			(println "debug3:" 
+				(difference (conj frame-list (get-abstractions x)) (conj visited-set frame-name)))
+			(if (> (count (difference (conj frame-list (get-abstractions x)) (conj visited-set frame-name)))
+				0)
+				(recur (difference (conj frame-list (get-abstractions x)) (conj visited-set frame-name))
+					(conj visited-set frame-name))))
+		ancestor-set ))
+
+(defn get-feature
+	"looks first in the native frame, then abstractions, then specializations, returning the first found
+	this is disgusting. It climbs the hierarchy and recurses down making an infinite loop: FIXME TODO"
+	{:test #(do
+		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list) (list))
+		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list) (list))
+		(create-frame :abs-frame-2 (list :abs-slot-1 :abs-slot-2) (list "m" "n") (list) (list))
+		(add-specialization :test-frame-4 :spec-frame-2)
+		(add-abstraction :test-frame-4 :abs-frame-2)
+
+		(println "testing get-feature with this frame:" )
+		(print-frame :test-frame-4)
+		;(println "test get-feature:"  (get-feature :test-frame-4 :test-slot-1))
+		;(assert (=  (get-feature :test-frame-4 :test-slot-1) "a"))
+		;(assert (=  (get-feature :test-frame-4 :test-slot-2) "b"))
+
+		(println "test get-feature" (get-feature :test-frame-4 :abs-slot-1) )
+		;;(assert (=  (get-feature :test-frame-4 :abs-slot-1) "m"))
+		;(assert (=  (get-feature :test-frame-4 :abs-slot-2) "n"))
+		;(println "test get-feature 2" (get-feature :test-frame-4 :spec-slot-1) )
+		;(assert (=  (get-feature :test-frame-4 :spec-slot-1) "x"))
+		;(assert (=  (get-feature :test-frame-4 :spec-slot-2) "z"))
+		
+	)}
+ [frame-name feature-name]
+	(cond (feature-name (:features (frame-name frame-of)) )
+			(feature-name (:features (frame-name frame-of))) 
+		  :t
+			(and 
+				(do 
+					(println "branch a" frame-name feature-name)
+					(map (fn [fr-name] 	
+							(do 
+								(println "  mapping in branch a" fr-name feature-name)
+								(get-feature fr-name feature-name)))
+				 		(get-specializations frame-name )))
+				(do 
+					(println "branch b" frame-name feature-name)
+					(map (fn [fr-name]  
+							(do 
+								(println "  mapping in branch b" fr-name feature-name)
+								(get-feature fr-name feature-name)))
+			 			(get-abstractions frame-name )) )   )))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;(print-frame nil)
-;;(create-frame :empty-person (list :fname :lname :mi)  nil  )
-;;(print-frame :empty-person)
-;;(println "empty person:")
-;;(print-frame :empty-person)
-;;(println "--------------")
-
-(create-frame :new-person (list :fname :lname :mi) (list "Bob" "Jones" "X") )
-;;(println "new person:")
-;;(print-frame :new-person)
-;;(println "last name of new person:")
-;;(println (base-slot :new-person :lname))
-;;(println "--------------")
-
-(create-frame :base-thing (list :dbid :mode) (list 123 :test))
-(create-frame :new-director (list :company :title :salary) (list "The" "Director" 1000000) :new-person :base-thing)
-;;(println "director with base-thing as abstraction, and new-person as specialization")
-;;(print-frame :new-director)
-;;(println "--------------")
-;;(println "specializations:" (get-specializations :new-director))
-;;(println "THIS IS NULL ?print-frame of specializations") (print-frame (first(get-specializations :new-director)))
-;;(print-frame :base-thing)
-;;(println "------------_________________--")
-;;(println "abstractions:" (get-abstractions :new-director))
-;;(println "print-frame of abstractions") (print-frame (first(get-abstractions :new-director)))
-;;(print-frame :new-person)
-;;(println "------------_________________--")
-;;(println "------------_________________--")
-;;(print-frame :new-director)
-;;(println "------------_________________--")
-;;(println "------------_________________--")
-(println "lname?:" (get-feature :new-director :lname))
-(println "title?:" (get-feature :new-director :title))
-(println "dbid?:" (get-feature :new-director :dbid))
-;`;(println "------------_________________--")
-;(println "spec" (get-specializations :new-director))
-;(println "xx-----")
-(println  (map (fn [x]  (get-feature x :lname))
-	(get-specializations :new-director)))
-(println "-----xx")
-;(println "get frame ----\\/\\/\\/----")
-;(print-frame :new-director)
-
+;;;(test #'create-frame)
+;;;(test #'get-abstractions)
+;(test #'get-abstractions)
+;;;(test #'add-specialization)
+;;;(test #'get-specializations)
+;;(test #'get-feature)
+(test #'find-ancestors)

@@ -20,6 +20,8 @@
 ;; record-log
 ;; print-log
 ;; with-logging
+;;
+;; How to test? This stuff is all side effects
 
 (def log-of { } )
 (def *logging* :t)
