@@ -156,29 +156,43 @@
 		(doseq [s (get-specializations frame-name)] (print-frame s))
 		(doseq [a (get-abstractions frame-name)] (print-frame a)) )) ) 
 
+		;;(assert (= (find-ancestors :abs-frame-2), (list ))
+		;;(assert (= (find-ancestors :test-frame-4), (list :abs-frame-2 ))
+		;;(assert (= (find-ancestors :sec-frame-2), (list :test-frame-4 :abs-frame-2 ))
 (defn find-ancestors
-	"Go up the abstraction hierarchy and collect ancestors/abstractions"
+	"Go up the abstraction hierarchy and collect specializaionts/abstractions"
 	{:test #(do
-		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list) (list))
-		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list) (list))
-		(create-frame :abs-frame-2 (list :abs-slot-1 :abs-slot-2) (list "m" "n") (list) (list))
-		(find-ancestors :abs-frame-2)
+		(create-frame :abs-frame-2 (list :abs-slot-1 :abs-slot-2) (list "m" "n")    (list :test-frame-4) (list))
+		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list :spec-frame-2) (list :abs-frame-2) )
+		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list)               (list :test-frame-4) )
+		(println "ANCESTORS abs " (find-ancestors :abs-frame-2))
+		(println "")
+		(println "ANCESTORS test" (find-ancestors :test-frame-4))
+		(println "")
+		(println "ANCESTORS spec" (find-ancestors :spec-frame-2))
+		(println "")
 	)}
 	[frame-name ]
-	(let [ancestor-set #{} ]
-		(loop [frame-list #{frame-name} visited-set #{nil} ]
-			(println "debug2:" frame-name visited-set "frame-list:" frame-list)
-			(map (fn [x] (do  
-					(def ancestor-set (conj ancestor-set (get-abstractions x)) )))
-			 	frame-list)
-			; recur on the built-up abstractions minus the visited-set
-			(println "debug3:" 
-				(difference (conj frame-list (get-abstractions x)) (conj visited-set frame-name)))
-			(if (> (count (difference (conj frame-list (get-abstractions x)) (conj visited-set frame-name)))
-				0)
-				(recur (difference (conj frame-list (get-abstractions x)) (conj visited-set frame-name))
-					(conj visited-set frame-name))))
-		ancestor-set ))
+		(loop [	loop-frame frame-name 
+				ancestor-set #{} 
+				visited-set #{frame-name} ]
+				(cond 
+					(<= (count (difference 
+									(conj (conj ancestor-set  (get-abstractions loop-frame)) loop-frame) 
+									visited-set))
+					0)
+					(do
+						(println  "exiting:" loop-frame ancestor-set visited-set);
+						ancestor-set  )
+					
+					:t 
+					(do
+						(println  "recurring:" loop-frame ancestor-set visited-set  )
+						(recur 
+							(first (difference ancestor-set visited-set))
+							(conj (conj ancestor-set (get-abstractions loop-frame)) loop-frame)
+							(conj visited-set loop-frame) )))))
+
 
 (defn get-feature
 	"looks first in the native frame, then abstractions, then specializations, returning the first found
