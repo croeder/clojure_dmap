@@ -12,7 +12,9 @@
 ;; TODO 
 ;; - abstractions and specializatons are linked lists, you only go up or down one level and then that frame tells you the next level up/down
 ;; - switch from defstructs to the new thing...records
-
+;;
+;; the current problem stems from get-abstractions returning a list and that list getting conjed to the set rather than each individual elemetn
+;;;
 (defstruct frame :name :features :specializations :abstractions)
 
 
@@ -52,6 +54,7 @@
 				; name
 				frame-name
 				; features
+;; map/conj the list of results into the set
 				(loop [new-frame {}  local-slot-list slot-list local-value-list value-list]
 					(let [slot (first local-slot-list) value (first local-value-list)]
 						(cond 
@@ -176,21 +179,19 @@
 		(loop [	loop-frame frame-name 
 				ancestor-set #{} 
 				visited-set #{frame-name} ]
-				(cond 
-					(<= (count (difference 
-									(conj (conj ancestor-set  (get-abstractions loop-frame)) loop-frame) 
-									visited-set))
-					0)
-					(do
-						(println  "exiting:" loop-frame ancestor-set visited-set);
-						ancestor-set  )
-					
-					:t 
-					(do
-						(println  "recurring:" loop-frame ancestor-set visited-set  )
+				(let [new-ancestor-set 
+						(difference 
+							(conj 
+								(reduce conj ancestor-set	(get-abstractions loop-frame) )
+								loop-frame )
+							nil)]
+					(cond 
+						(<= (count (difference  new-ancestor-set visited-set)) 0)
+						ancestor-set  
+						:t 
 						(recur 
-							(first (difference ancestor-set visited-set))
-							(conj (conj ancestor-set (get-abstractions loop-frame)) loop-frame)
+							(first (difference ancestor-set visited-set) )
+							new-ancestor-set
 							(conj visited-set loop-frame) )))))
 
 
