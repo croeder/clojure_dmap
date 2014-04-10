@@ -157,11 +157,8 @@
 	 (do
 		(println "print-frame frame name:" frame-name " contents:" (frame-name frame-of))
 		(doseq [s (get-specializations frame-name)] (print-frame s))
-		(doseq [a (get-abstractions frame-name)] (print-frame a)) )) ) 
+		(doseq [a (get-abstractions frame-name)] (print-frame a)) )) )
 
-		;;(assert (= (find-ancestors :abs-frame-2), (list ))
-		;;(assert (= (find-ancestors :test-frame-4), (list :abs-frame-2 ))
-		;;(assert (= (find-ancestors :sec-frame-2), (list :test-frame-4 :abs-frame-2 ))
 (defn find-ancestors
 	"Go up the abstraction hierarchy and collect specializaionts/abstractions"
 	{:test #(do
@@ -169,11 +166,11 @@
 		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list :spec-frame-2) (list :abs-frame-2) )
 		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list)               (list :test-frame-4) )
 		(println "ANCESTORS abs " (find-ancestors :abs-frame-2))
-		(println "")
 		(println "ANCESTORS test" (find-ancestors :test-frame-4))
-		(println "")
 		(println "ANCESTORS spec" (find-ancestors :spec-frame-2))
-		(println "")
+		(assert (= (find-ancestors :abs-frame-2), #{:abs-frame-2}))
+		(assert (= (find-ancestors :test-frame-4), #{ :abs-frame-2 :test-frame-4}))
+		(assert (= (find-ancestors :spec-frame-2), #{ :spec-frame-2 :abs-frame-2 :test-frame-4 }))
 	)}
 	[frame-name ]
 		(loop [	loop-frame frame-name 
@@ -187,17 +184,16 @@
 							nil)]
 					(cond 
 						(<= (count (difference  new-ancestor-set visited-set)) 0)
-						ancestor-set  
+						new-ancestor-set  
 						:t 
 						(recur 
-							(first (difference ancestor-set visited-set) )
+							(first (difference new-ancestor-set visited-set) )
 							new-ancestor-set
 							(conj visited-set loop-frame) )))))
 
 
 (defn get-feature
-	"looks first in the native frame, then abstractions, then specializations, returning the first found
-	this is disgusting. It climbs the hierarchy and recurses down making an infinite loop: FIXME TODO"
+	"looks first in the native frame, then abstractions, then specializations, returning the first found this is disgusting. It climbs the hierarchy and recurses down making an infinite lewp FIXME TODO"
 	{:test #(do
 		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list) (list))
 		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list) (list))
@@ -205,9 +201,9 @@
 		(add-specialization :test-frame-4 :spec-frame-2)
 		(add-abstraction :test-frame-4 :abs-frame-2)
 
-		(println "testing get-feature with this frame:" )
+		(println "testing get-feature with this frame")
 		(print-frame :test-frame-4)
-		;(println "test get-feature:"  (get-feature :test-frame-4 :test-slot-1))
+		;(println "test get-feature"  (get-feature :test-frame-4 :test-slot-1))
 		;(assert (=  (get-feature :test-frame-4 :test-slot-1) "a"))
 		;(assert (=  (get-feature :test-frame-4 :test-slot-2) "b"))
 
