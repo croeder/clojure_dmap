@@ -12,7 +12,7 @@
 ;; TODO 
 ;; - abstractions and specializatons are linked lists, you only go up or down one level and then that frame tells you the next level up/down
 ;; - switch from defstructs to the new thing...records
-;;
+;; - the whole frame-of global hash thing is a little awkward in a immutable world
 ;; the current problem stems from get-abstractions returning a list and that list getting conjed to the set rather than each individual elemetn
 ;;;
 (defstruct frame :name :features :specializations :abstractions)
@@ -66,19 +66,18 @@
 									(rest local-value-list) 
 								))  ))
 				; specializations
+;; reduce f val col
 				(cond (frame-of frame-name)
-						(conj ((frame-of frame-name) :specializations 
-						;;(conj (:specializations (frame-of frame-name)
+						(reduce conj ((frame-of frame-name) :specializations )
 					 		(cond (empty? specializations) (list) :t specializations)
-						))
+						)
 					:t 	(cond (empty? specializations) (list) :t specializations))
 
 				; abstractions
 				(cond (frame-of frame-name)
-						(conj ((frame-of frame-name) :abstractions 
-						;;(conj (:abstractions (frame-of frame-name) 
+						(reduce conj ((frame-of frame-name) :abstractions )
 					 		(cond (empty? abstractions) (list) :t abstractions )
-						))
+						)
 					:t 	(cond (empty? abstractions) (list) :t abstractions ))
 ))))
 
@@ -200,6 +199,7 @@
 (defn find-descendents
 	"Go up the abstraction hierarchy and collect specializaionts/abstractions"
 	{:test #(do
+		(println "xxxxxxx" (frame-of :abs-frame-2))
 		(create-frame :abs-frame-2 (list :abs-slot-1 :abs-slot-2) (list "m" "n")    (list :test-frame-4) (list))
 		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list :spec-frame-2) (list :abs-frame-2) )
 		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list)               (list :test-frame-4) )
@@ -270,4 +270,4 @@
 ;;;(test #'get-specializations)
 ;;(test #'get-feature)
 (test #'find-ancestors)
-;(test #'find-descendents)
+(test #'find-descendents)
