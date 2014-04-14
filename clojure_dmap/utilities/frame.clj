@@ -159,6 +159,28 @@
 		(doseq [s (get-specializations frame-name)] (print-frame s))
 		(doseq [a (get-abstractions frame-name)] (print-frame a)) )) )
 
+(defn find-relatives
+	"Go up the abstraction hierarchy and collect specializaionts/abstractions"
+	[frame-name  traverse-fun]
+		(loop [	loop-frame frame-name 
+				ancestor-set #{} 
+				visited-set #{frame-name} ]
+				(let [new-ancestor-set 
+						(difference 
+							(conj 
+								(reduce conj ancestor-set	(traverse-fun loop-frame) )
+								loop-frame )
+							nil)]
+					(cond 
+						(<= (count (difference  new-ancestor-set visited-set)) 0)
+						new-ancestor-set  
+						:t 
+						(recur 
+							(first (difference new-ancestor-set visited-set) )
+							new-ancestor-set
+							(conj visited-set loop-frame) )))))
+
+
 (defn find-ancestors
 	"Go up the abstraction hierarchy and collect specializaionts/abstractions"
 	{:test #(do
@@ -172,24 +194,24 @@
 		(assert (= (find-ancestors :test-frame-4), #{ :abs-frame-2 :test-frame-4}))
 		(assert (= (find-ancestors :spec-frame-2), #{ :spec-frame-2 :abs-frame-2 :test-frame-4 }))
 	)}
-	[frame-name ]
-		(loop [	loop-frame frame-name 
-				ancestor-set #{} 
-				visited-set #{frame-name} ]
-				(let [new-ancestor-set 
-						(difference 
-							(conj 
-								(reduce conj ancestor-set	(get-abstractions loop-frame) )
-								loop-frame )
-							nil)]
-					(cond 
-						(<= (count (difference  new-ancestor-set visited-set)) 0)
-						new-ancestor-set  
-						:t 
-						(recur 
-							(first (difference new-ancestor-set visited-set) )
-							new-ancestor-set
-							(conj visited-set loop-frame) )))))
+	[frame-name]
+	(find-relatives frame-name get-abstractions))
+
+(defn find-descendents
+	"Go up the abstraction hierarchy and collect specializaionts/abstractions"
+	{:test #(do
+		(create-frame :abs-frame-2 (list :abs-slot-1 :abs-slot-2) (list "m" "n")    (list :test-frame-4) (list))
+		(create-frame :test-frame-4 (list :test-slot-1 :test-slot-2) (list "a" "b") (list :spec-frame-2) (list :abs-frame-2) )
+		(create-frame :spec-frame-2 (list :spec-slot-1 :spec-slot-2) (list "x" "z") (list)               (list :test-frame-4) )
+		(println "DESCENDENTS abs " (find-descendents :abs-frame-2))
+		(println "DESCENDENTS test" (find-descendents :test-frame-4))
+		(println "DESCENDENTS spec" (find-descendents :spec-frame-2))
+		(assert (= (find-descendents :abs-frame-2), #{:spec-frame-2 :abs-frame-2 :test-frame-4}))
+		(assert (= (find-descendents :test-frame-4), #{ :spec-frame-2 :test-frame-4}))
+		(assert (= (find-descendents :spec-frame-2), #{ :spec-frame-2}))
+	)}
+	[frame-name]
+	(find-relatives frame-name get-specializations))
 
 
 (defn get-feature
@@ -248,3 +270,4 @@
 ;;;(test #'get-specializations)
 ;;(test #'get-feature)
 (test #'find-ancestors)
+;(test #'find-descendents)
