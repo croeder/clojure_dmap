@@ -1,0 +1,50 @@
+
+(defmethod print-object ((frame frame) stream)
+(defmethod name ((frame t)) frame)
+(defun frame-p (object)
+(defun ->frame (object)
+(defun ->name (object)
+(defun force-frame (name)
+
+;; Data structure for features (slots). A attribute/value pair.
+
+;; inherited attribute values
+
+(defun inherited-attribute-value (frame attribute)
+(defmethod part-of ((part frame) (whole frame))
+(defmethod part-of ((part t) (whole t))
+(defmethod whole-of ((whole t) (part t))
+
+;; Abstractions and specializations
+(defmethod all-abstractions ((frame t))
+(defmethod update-specializations ((frame frame))
+(defmethod update-abstractions ((frame frame)) 
+(defmethod calculate-all-abstractions* ((frame frame))
+(defmethod calculate-all-abstractions ((frame frame))
+(defmethod abstp ((abst frame) (spec frame))
+(defmethod abstp ((abst t) (spec t))
+(defmethod specp ((spec t) (abst t))
+(defun abst-or-whole-of (big small)
+(defun spec-or-part-of (small big)
+
+;; Interface to clear memory and define frames
+(defun clear-frame-memory ()
+(set-macro-character
+;;; causes a right-bracket w/o a left to signal an error
+(set-macro-character #\] (get-macro-character #\) ) nil)
+(defun define-frame (name abstractions attribute-value-list)
+(defmacro def-frame (name &optional abstractions &rest attribute-value-list)
+
+;; Frame finding
+(defmethod all-features ((frame frame))
+(defun find-frame (abst features)
+(defun find-specs (abst features)
+(defun features-abstp (abst features)
+(defun features-subsetp (features abst)
+(defun gen-frame-name (name)
+(defun features->feature-specs (features)
+
+;;; Printing utilities
+(defun display-frame (frame &optional (stream *standard-output*))
+(defun pprint-frame-info (frame stream left-margin)
+(defun display-frames-with-roles (name roles

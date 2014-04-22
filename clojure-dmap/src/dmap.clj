@@ -6,27 +6,32 @@
 ;; "target" of their first phrasal pattern element
 ;;------------------------------------------------------------------------------
 
-(defclass prediction ()
-  ((base :initarg :base :initform nil :accessor base) 
-   (phrasal-pattern :initarg :phrasal-pattern :initform nil :accessor phrasal-pattern) 
-   (start :initarg :start :initform nil :accessor start)
-   (next :initarg :next :initform nil :accessor next) 
-   (slots :initarg :slots :initform nil :accessor slots)))
+; datatypes:
+; - Prediction have names like frames in frames.data
+; - Phrasal Pattern cpontained by Predictions. Predictions-->pharasal pattern names defined in phrases.data
+; instances
+; - anytime-predictions
+; 
 
-(defun make-prediction (&key base phrasal-pattern start next slots) 
-  (make-instance 'prediction 
-    :base base :phrasal-pattern phrasal-pattern :start start :next next :slots slots))
+(defrecord Prediction :base :phrasal-pattern :start :next :slots)
+(def anytime-predictions-on {})
+(def dynamic-predictions-on {})
 
+; why? Because this isn't right and should be able to take field symbol/names
+(defun make-prediction [base phrasal-pattern start next slots]
+	(Prediction. base phrasal-pattern stat next slot))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (tables:deftable anytime-predictions-on)
-  (tables:deftable dynamic-predictions-on))
+(defun index-anytime-prediction 
+"Put the phrasal pattern/prediction in the table for its target."
+[prediction]
+  (push prediction (anytime-predictions-on (prediction-target prediction))))
 
-(defun add-phrasal-pattern (base phrasal-pattern)
-  "Adds the phrasal pattern of base to the table of static predictions."
+(defun add-phrasal-pattern 
+" add a phrasaal-pattern to a prediction"
+[base phrasal-pattern]
   (if (and (eql base (first phrasal-pattern)) (null (rest phrasal-pattern)))
     nil
-    (progn (index-anytime-prediction
+    (do (index-anytime-prediction
             (make-prediction :base base :phrasal-pattern phrasal-pattern)) 
            phrasal-pattern)))
 
@@ -36,13 +41,55 @@
       `(progn (add-phrasal-pattern ',base ',phrasal-pattern)
               ',phrasal-pattern)))
 
+;; why is this a macro?
 (defmacro def-phrases (base &rest phrasal-patterns)
   `(loop for phrasal-pattern in ',phrasal-patterns doing
          (add-phrasal-pattern ',base phrasal-pattern)))
 
-(defun index-anytime-prediction (prediction)
+(defun index-dynamic-prediction (prediction)
   "Put the phrasal pattern/prediction in the table for its target."
-  (push prediction (anytime-predictions-on (prediction-target prediction))))
+  (push prediction (dynamic-predictions-on (prediction-target prediction))))
+
+(defun predictions-on (index)
+  (append (anytime-predictions-on index)
+          (dynamic-predictions-on index)))
+
+(defun clear-predictions (&optional (which :dynamic))
+  (ecase which
+    (:dynamic (clear-table (dynamic-predictions-on)))
+    (:anytime (clear-table (anytime-predictions-on)))
+    (:all (clear-table (dynamic-predictions-on))
+          (clear-table (anytime-predictions-on)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;(defclass prediction (); supertype
+  ((base :initarg :base :initform nil :accessor base) 
+   (phrasal-pattern :initarg :phrasal-pattern :initform nil :accessor phrasal-pattern) 
+   (start :initarg :start :initform nil :accessor start)
+   (next :initarg :next :initform nil :accessor next) 
+   (slots :initarg :slots :initform nil :accessor slots)))
+
+;;;(defun make-prediction [&key base phrasal-pattern start next slots]
+  (make-instance 'prediction 
+    :base base :phrasal-pattern phrasal-pattern :start start :next next :slots slots))
+
+
+;;;(eval-when (:compile-toplevel :load-toplevel :execute)
+  (tables:deftable anytime-predictions-on)
+  (tables:deftable dynamic-predictions-on))
+
+(defmacro def-phrase (base &rest phrasal-pattern)
+  (if (and (eql base (car phrasal-pattern)) (null (cdr phrasal-pattern)))
+      (error "~S can't reference itself" base)
+      `(progn (add-phrasal-pattern ',base ',phrasal-pattern)
+              ',phrasal-pattern)))
+
+;; why is this a macro?
+(defmacro def-phrases (base &rest phrasal-patterns)
+  `(loop for phrasal-pattern in ',phrasal-patterns doing
+         (add-phrasal-pattern ',base phrasal-pattern)))
+
 
 (defun index-dynamic-prediction (prediction)
   "Put the phrasal pattern/prediction in the table for its target."

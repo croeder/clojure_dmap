@@ -33,3 +33,12 @@
 
 (yuk 4)
 
+(println (map (fn [x] (+ x 3)) data))
+
+(def complex-keys {
+	(list :f :x) "value"
+	(list :g :y) "other value"}
+)
+
+(println complex-keys)
+
