@@ -1,0 +1,97 @@
+
+
+*Ontology Entries: FRAMES*
+In this vresion the ontology is kept in frames. These are structure
+with attributes called slots and specialization (derivation) and
+abstraction (base class) links to other frames. There is special
+code for this rather than defstructs so they can be dynamically
+created. The symbols used in patterns are names of entries here.
+Example:
+			(def-frame m-coloured-water-bits (m-water-bits)
+			  (:colour m-colour)
+			  (:object m-water-bits))
+m-coloured-water-bits is a specialization of m-water-bits and
+has slots :colour and :object that can be filled by instances
+of the ontology items m-colour or m-water-bits.
+There is hierarchy to the ontology. Here you can see how
+m-coloured-water-bits is-a m-water-bits is-a problem is-a index is-a root.
+(def-frame m-root)
+(def-frame m-index (m-root))
+	(def-frame m-problem (m-index))
+		(def-frame m-water-bits (m-problem))
+			(def-frame m-coloured-water-bits (m-water-bits)
+
+
+*Patterns PRHASES*
+The patterns don't involve regular expressions and are simply lists
+of words to be matched verbatim except for ontology term referencs. 
+Patterns are distiguished from
+ontology references by the use of symbol notation: a colon prefix.
+For example "Chris uses :vehicle transportation to commute to work."
+would refer to an ontology class :vehicle that that includes bus, 
+train, pedestrian, bicycle or car.
+(def-phrase m-problem 		problem)
+(def-phrase m-water-bits 	bits)
+(def-phrase m-water-bits 	particles)
+(def-phrase m-water-bits 	pieces)
+(def-phrase m-coloured-water-bits :colour :object)
+
+
+Example Phrase: "problem blue pieces"
+"problem" matches m-problem, a generalization of m-coloured-water-bits
+"colour" matches m-color for the :colour slot
+"pieces" matches m-water-bits, which fits the :object slot directly
+(there might have to be some frame searching to find the one in the
+hierarchy that has the slots you have) In this case you have to
+go down from problem past m-water-bits to m-coloured-water-bits
+to get the frame that has slots for :color and :object.
+
+This kind of parsing has been described as top-down where the rule
+says what you are looking for, more so than all the parts come
+together to find the rule. In reality, there are a number of candidate
+rules in play and the parts tells which one ultimately fits the text.
+So the way to think about this downcasting is that there would be a
+pattern in-play for  m-problem that matches "problem" literally.
+At the same time is a pattern for m-coloured-water-bits that
+matches in a specialized* way the m-problem. When the color is
+read the m-problem pattern maybe instantiated, but the m-coloured-water-bits
+pattern is still in play so the game is not over. m-coloured-water-bits
+can use m-problem and the slots.
+
+Q:How do you know when the patterns are over and it it's time to start again?
+Do you keep going until you've exhausted all patterns and one (the most
+complex?) matches?
+Q: where does the pattern matching a pattern through specialization
+come into play code-wise?
+Q: do the slots have order? i.e. do you have to have color before 
+object if that is the order they come in?
+Q: and isnt' there something special about the :object slot?
+
+The phrases/predictions/patterns serve two purposes: to describe
+the pattern statically, and to  store the results of the pattern
+as it's matched. 
+- :base is the base ontological concept being matched
+- :phrasal-pattern is the text
+- :slots (optional)
+- :start where the current matching session is starting
+- :next - the next token for the system to consider
+
+
+*Search Algorithm*
+Given a token in the input stream, the matcher looks for patterns
+that either start with that token, or that have been started and
+are waiting for this token either literally or as an instance of
+an ontolgy class.  Slots...
+
+  "Advancing a phrasal pattern/prediction means:
+   if the predicted phrasal pattern has been completely seen, to reference 
+   the base of the prediction with the slots that have been collected;
+   otherwise, to create a new prediction for the next item in the
+   prediction phrasal pattern."
+
+
+
+DEV STAGES
+ - simple literal patterns
+- simple patterns
+- layered patterns w
