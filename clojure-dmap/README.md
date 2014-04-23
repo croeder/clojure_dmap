@@ -76,7 +76,7 @@ scripts. Larry Hunter et al  have applied dmap in an
 implementation applied to information extraction from
 biomedical research papers with a project called OpenDMAP. 
 It has seen high levels of precision in community shared
-tasks such as BioCreative III.  Kevin Livingston and 
+tasks such as BioCreative III and others.  Kevin Livingston and 
 Larry Hunter are continuing this work using large
 ontologies. It may play a role in building models of
 thematic roles in domain-specific verb usage.
