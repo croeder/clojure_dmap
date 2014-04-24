@@ -7,7 +7,7 @@ https://github.com/willf/lisp_dmap
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
 
-#Introduction
+##Introduction
 A Direct Memory Access Parser (DMAP)  is a semantic parser, meaning 
 the specified patterns are not strictly lexical and can include 
 smeantic attributes of the components. Whereas a regular expression
@@ -21,8 +21,9 @@ This implementation started with a lisp project Wil Fitzgerald wrote.
 The goals here are not to produce a perfect translation, or to advance
 research, but to learn clojure by attemtping to do something similar.
 
+## Components
 
-#Patterns
+###Patterns
 The patterns don't involve regular expressions and are simply lists
 of words to be matched verbatim. Patterns are distiguished from
 ontology references by the use of symbol notation: a colon prefix.
@@ -30,21 +31,21 @@ For example "Chris uses :vehicle transportation to commute to work."
 would refer to an ontology class :vehicle that that includes bus, 
 train, pedestrian, bicycle or car.
 
-#Ontology Entries
+###Ontology Entries
 In this vresion the ontology is kept in frames. These are structure
 with attributes called slots and specialization (derivation) and
 abstraction (base class) links to other frames. There is special
 code for this rather than defstructs so they can be dynamically
 created. The symbols used in patterns are names of entries here.
 
-#Search Algorithm
+###Search Algorithm
 Given a token in the input stream, the matcher looks for patterns
 that either start with that token, or that have been started and
 are waiting for this token as the next part of the pattern. The
 rules are search for start words, and a list of rules in progress
 is maintained in a hash keyed by the next required token.
 
-#Future Work
+##Future Work
 - add regular expressions
 - be able to layer rules for better rule modularity
 - expand the syntax for easier rule writing: optional sections,
@@ -70,7 +71,7 @@ to accomplish this
 
 Clearly more opportunity than a hobby requires.
 
-#Applications
+##Applications
 The examples in Fitzgerald's work show natural language
 understanding applied to customer service representative
 scripts. Larry Hunter et al  have applied dmap in an 
