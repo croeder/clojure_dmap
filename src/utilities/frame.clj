@@ -10,9 +10,11 @@
 
 
 ;; TODO 
-;; - abstractions and specializatons are linked lists, you only go up or down one level and then that frame tells you the next level up/down
-;; - switch from defstructs to the new thing...records
-;; - the whole frame-of global hash thing is a little awkward in a immutable world
+;; ---> really need a termination condition for scan-for-match when THEY DON"T EXIST!!
+;; ---> fix and consider frames that are created wihtout values for each slot
+;;
+;; - switch from defstructs to the new thing...records ?
+;; - the whole frame-of global hash thing is a little awkward in an immutable world
 ;; the current problem stems from get-abstractions returning a list and that list getting conjed to the set rather than each individual elemetn
 ;;;
 (defstruct frame :name :features :specializations :abstractions)
@@ -54,7 +56,7 @@
 				; name
 				frame-name
 				; features
-;; map/conj the list of results into the set
+				;; map/conj the list of results into the set
 				(loop [new-frame {}  local-slot-list slot-list local-value-list value-list]
 					(let [slot (first local-slot-list) value (first local-value-list)]
 						(cond 
@@ -66,11 +68,10 @@
 									(rest local-value-list) 
 								))  ))
 				; specializations
-;; reduce f val col
+				;; reduce f val col
 				(cond (frame-of frame-name)
 						(reduce conj ((frame-of frame-name) :specializations )
-					 		(cond (empty? specializations) (list) :t specializations)
-						)
+					 		(cond (empty? specializations) (list) :t specializations)  )
 					:t 	(cond (empty? specializations) (list) :t specializations))
 
 				; abstractions
@@ -78,8 +79,7 @@
 						(reduce conj ((frame-of frame-name) :abstractions )
 					 		(cond (empty? abstractions) (list) :t abstractions )
 						)
-					:t 	(cond (empty? abstractions) (list) :t abstractions ))
-))))
+					:t 	(cond (empty? abstractions) (list) :t abstractions ))  ))))
 
 (defn get-specializations 
 	"returns a list of symbols to the frames that are specializations of this one"
@@ -88,7 +88,7 @@
 		(assert (= (get-specializations :test-frame-1) (list :spec1 :spec2)))
 	)}
 	[frame-name]
-	(:specializations (frame-of frame-name) ))
+	(:specializations (frame-of frame-name)) )
 
 
 (defn get-abstractions 
@@ -98,7 +98,7 @@
 		(assert (= (get-abstractions :test-frame-2) (list :abs1 :abs2)))
 	)}
 	[frame-name]
-	(:abstractions (frame-of frame-name) ))
+	(:abstractions (frame-of frame-name)) )
 
 
 (defn add-specialization 
@@ -118,8 +118,7 @@
 		(assoc frame-of frame-name
 			;; modify the frame struct
 			(assoc (frame-of frame-name) :specializations
-				(conj ((frame-of frame-name) :specializations) spec-name))
-		))
+				(conj ((frame-of frame-name) :specializations) spec-name)) ))
 
 
 	; add the abs to the spec-name frame
@@ -134,18 +133,13 @@
 			(assoc (frame-of spec-name) :abstractions
 				(cond (not(nil? ((frame-of spec-name) :specializations)))
 						(conj ((frame-of spec-name) :specializations) frame-name)
-					; wtf is spec-name null here or specializations
-					;;;;;	(conj ((frame-of spec-name) :specializations) frame-name)
-					:t (println "YOOOO! you got it"))
-					))) )
+					:t (println "YOOOO! you got it"))  ))))
 
 (defn add-abstraction [frame-name abs-name]
 	(add-specialization abs-name frame-name))
 
 (defn base-slot [frame-name slot-name]
-	(println "fname:" frame-name "slot value:" ((frame-of frame-name) slot-name)  "slot name:" slot-name)
-	;;((frame-of frame-name) slot-name)
-)
+	(println "fname:" frame-name "slot value:" ((frame-of frame-name) slot-name)  "slot name:" slot-name) )
 
 (defn print-frame 
 	"this is disgusting. It climbs the hierarchy and recurses down making an infinite loop: FIXME TODO"
@@ -213,6 +207,51 @@
 	[frame-name]
 	(find-relatives frame-name get-specializations))
 
+(defn scan-for-match
+	"goes up  then down  the spec/abs hierarchy looking for a frame with the listed slots. Returns its name. Need to consider if the candidate frame has slots beyond what we're looking for or not and how that relates to the order of the search and what you assume about more slots and mroe specific. Here, I'm reducing over the set passed in verying a candidate frame has each slot.  The first found that matches wins, regardless of other slots it may have."
+	{:test #(do
+		(create-frame :vehicle (list :type) (list) (list :car) (list)) 
+		(create-frame :car (list :country) (list) (list :sedan :sports-car) (list :vehicle) ) 
+		(create-frame :sports-car (list :hp) (list) (list :luxury-sedan) (list :car) ) 
+		(create-frame :sedan (list :num-seats) (list) (list) (list :car) ) 
+		(create-frame :luxury-sedan (list :power-features) (list) (list) (list :sedan) )
+		(println  "test 1 hoping for sports-car:" (scan-for-match :sports-car #{:hp} ))
+		;(assert (= :sports-car   (scan-for-match :sports-car #{:hp} ))) ;(assert (= :sports-car   (scan-for-match :car       #{:hp} ))) 
+		;(assert (= :luxury-sedan (scan-for-match :car       #{:power-features} ))) 
+		;(assert (= :sedan        (scan-for-match :car       #{:num-seats} ))) 
+		;(assert (= :sedan        (scan-for-match :sedan     #{:num-seats} ))) 
+		;(assert (= :sedan        (scan-for-match :luxury-sedan #{:num-seats} ))) ; or should this return luxury-sedan? 
+		;(assert (= :sports-car   (scan-for-match :car       #{:num-seats} )))
+		
+	 )}
+	[start-frame-name slot-name-set]
+	(loop [done-set #{}
+			count 0
+			frames-set (conj (reduce conj #{} 
+								(concat (get-abstractions start-frame-name) 
+								    (get-specializations start-frame-name) ))
+						 start-frame-name ) ]  
+		(println "start frames-set:" frames-set "done-set:" done-set  )
+		(cond 	(or (nil? frames-set) (nil? (first frames-set)) )
+				nil
+				:t
+			  	(let [slots-list (:features (frame-of (first frames-set))) ]
+				  (cond (or (= count 4)
+						(or (reduce (fn [y x]  (and y (contains?  slots-list x))) true  slot-name-set)
+						(or (empty? slots-list) 
+							(every? nil? slots-list))))
+					(do (println "exit;") (first frames-set) )
+					:t 
+					(recur 
+						(conj done-set (first frames-set))
+						(+ count 1)
+						(difference ; add abs and spec to frame-set
+							(reduce conj frames-set
+								(reduce conj (get-abstractions (first frames-set))
+									(get-specializations (first frames-set))))
+							(conj done-set (first frames-set)) )
+				))))))
+
 
 (defn get-feature
 	"looks first in the native frame, then abstractions, then specializations, returning the first found this is disgusting. It climbs the hierarchy and recurses down making an infinite lewp FIXME TODO"
@@ -269,5 +308,7 @@
 ;;;(test #'add-specialization)
 ;;;(test #'get-specializations)
 ;;(test #'get-feature)
-(test #'find-ancestors)
-(test #'find-descendents)
+;(test #'find-ancestors)
+;(test #'find-descendents)
+(test #'scan-for-match)
+
