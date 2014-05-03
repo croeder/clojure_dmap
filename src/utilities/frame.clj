@@ -216,12 +216,12 @@
 		(create-frame :sedan (list :num-seats) (list) (list) (list :car) ) 
 		(create-frame :luxury-sedan (list :power-features) (list) (list) (list :sedan) )
 		(println  "test 1 hoping for sports-car:" (scan-for-match :sports-car #{:hp} ))
-		;(assert (= :sports-car   (scan-for-match :sports-car #{:hp} ))) ;(assert (= :sports-car   (scan-for-match :car       #{:hp} ))) 
-		;(assert (= :luxury-sedan (scan-for-match :car       #{:power-features} ))) 
-		;(assert (= :sedan        (scan-for-match :car       #{:num-seats} ))) 
-		;(assert (= :sedan        (scan-for-match :sedan     #{:num-seats} ))) 
-		;(assert (= :sedan        (scan-for-match :luxury-sedan #{:num-seats} ))) ; or should this return luxury-sedan? 
-		;(assert (= :sports-car   (scan-for-match :car       #{:num-seats} )))
+		(assert (= :sports-car   (scan-for-match :sports-car #{:hp} ))) ;(assert (= :sports-car   (scan-for-match :car       #{:hp} ))) 
+		(assert (= :luxury-sedan (scan-for-match :car       #{:power-features} ))) 
+		(assert (= :sedan        (scan-for-match :car       #{:num-seats} ))) 
+		(assert (= :sedan        (scan-for-match :sedan     #{:num-seats} ))) 
+		(assert (= :sedan        (scan-for-match :luxury-sedan #{:num-seats} ))) ; or should this return luxury-sedan? 
+		;(assert (= :sedan   (scan-for-match :car       #{:num-seats} )))
 		
 	 )}
 	[start-frame-name slot-name-set]
