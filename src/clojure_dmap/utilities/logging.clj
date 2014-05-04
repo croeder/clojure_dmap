@@ -8,7 +8,7 @@
 ;; use assoc with the log-of hash to add entries
 ;;------------------------------------------------------------------------------
 
-(ns utilities.logging)
+(ns clojure_dmap.utilities.logging)
 
 ; what fun.s to export?
 ;; reset-log

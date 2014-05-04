@@ -4,7 +4,7 @@
 ;; of an inheritance hierarchy.
 ;; This module includes an uber-hash holding all the frames.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ns utilities.frame
+(ns clojue_dmap.utilities.frame
 	"data structures used in this dmap implementation"
 	(use [clojure.set :only [difference]])
 )
