@@ -3,9 +3,13 @@
 A Clojure port of Will Fitzgerald's small, lisp  dmap project.
 https://github.com/willf/lisp_dmap
 
-
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
+
+## WARNING ##
+This is meant as hobby or demonstartion code. Don't adapt it to
+a web app. I use slurp and eval, which would be exposing security
+issues.
 
 ##Introduction
 A Direct Memory Access Parser (DMAP)  is a semantic parser, meaning 

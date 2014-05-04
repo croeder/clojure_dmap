@@ -3,9 +3,11 @@
 ;; A frame is a hash of attribute-value pairs that is part
 ;; of an inheritance hierarchy.
 ;; This module includes an uber-hash holding all the frames.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use '[clojure.set :only [difference]])
-(load-file "arities.clj")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ns utilities.frame
+	"data structures used in this dmap implementation"
+	(use [clojure.set :only [difference]])
+)
 (def frame-of {})
 
 

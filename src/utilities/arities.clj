@@ -1,3 +1,4 @@
+(ns utilities.arities)
 
 (defn arities 
 	"tells how many items in structures"
