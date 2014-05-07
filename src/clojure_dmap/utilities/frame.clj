@@ -4,21 +4,16 @@
 ;; of an inheritance hierarchy.
 ;; This module includes an uber-hash holding all the frames.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ns clojue_dmap.utilities.frame
+(ns clojure-dmap.utilities.frame
 	"data structures used in this dmap implementation"
 	(use [clojure.set :only [difference]])
 )
-(def frame-of {})
-
+(def  ^:dynamic frame-of {})
 
 ;; TODO 
-;; ---> really need a termination condition for scan-for-match when THEY DON"T EXIST!!
-;; ---> fix and consider frames that are created wihtout values for each slot
-;;
 ;; - switch from defstructs to the new thing...records ?
 ;; - the whole frame-of global hash thing is a little awkward in an immutable world
-;; the current problem stems from get-abstractions returning a list and that list getting conjed to the set rather than each individual elemetn
-;;;
+
 (defstruct frame :name :features :specializations :abstractions)
 
 
@@ -52,6 +47,7 @@
 				
 			)}
 	[frame-name slot-list value-list specializations abstractions] 
+		(println "*** creating frname *** : " frame-name)
 		(def frame-of 
 			(assoc frame-of frame-name 
 			  (struct frame  
@@ -82,6 +78,12 @@
 					 		(cond (empty? abstractions) (list) :t abstractions )
 						)
 					:t 	(cond (empty? abstractions) (list) :t abstractions ))  ))))
+
+(defmacro def-frame [frame abs & slot-val-pairs]
+	"simplify frame creation, just one abstraction"
+	(let [slot-list (map first  slot-val-pairs) 
+		  value-list (map last  slot-val-pairs)]
+		(create-frame frame slot-list value-list  (list) (list abs)) ))
 
 (defn get-specializations 
 	"returns a list of symbols to the frames that are specializations of this one"
@@ -312,5 +314,5 @@
 ;;(test #'get-feature)
 ;(test #'find-ancestors)
 ;(test #'find-descendents)
-(test #'scan-for-match)
+;(test #'scan-for-match)
 

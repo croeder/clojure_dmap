@@ -1,12 +1,12 @@
-(ns clojure-dmap.dmap)
+(ns clojure-dmap.dmap
+ "pattern matching"
+	(use [clojure-dmap.utilities.frame]
+		[clojure.string :exclude [reverse replace]]
+		[clojure-dmap.frames]
+))
 
 
-(defn load-frames [filename ] 
-	(eval (slurp filename)))
+(defn -main [& args] 
+	(load-frames) )
 
-(defn load-patterns [])
-
-(defn load-phrasal-patterns [])
-
-(defn -main [& args] (load-frames "resources/frames.data"))
 
