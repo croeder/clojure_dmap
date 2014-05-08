@@ -6,7 +6,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ns clojure-dmap.utilities.frame
 	"data structures used in this dmap implementation"
-	(use [clojure.set :only [difference]])
+	(use [ clojure.set :only [difference] ])
 )
 (def  ^:dynamic frame-of {})
 

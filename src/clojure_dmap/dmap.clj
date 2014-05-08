@@ -1,12 +1,13 @@
 (ns clojure-dmap.dmap
  "pattern matching"
-	(use [clojure-dmap.utilities.frame]
-		[clojure.string :exclude [reverse replace]]
-		[clojure-dmap.frames]
+	(use 
+		[ clojure-dmap.frames ]
+		[ clojure-dmap.patterns ]
 ))
 
-
 (defn -main [& args] 
-	(load-frames) )
+	(load-frames) 
+	(load-phrases)
+)
 
 
