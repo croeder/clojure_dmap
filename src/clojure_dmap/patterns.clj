@@ -1,6 +1,7 @@
 (ns clojure-dmap.patterns
 	""
-	(use [ clojure-dmap.phrasal-patterns ] ))
+	(use [ clojure-dmap.phrasal-patterns ] )
+)
 
 ;; a pattern is a string of literals and ontology mentions to be matched
 ;; not necessarily in order
@@ -21,15 +22,16 @@
 
 
 (defn load-phrases []
-	(create-phrasal-pattern "Chris" :m-person)
-	(create-phrasal-pattern "bus" :m-bus)
-	(create-phrasal-pattern "rode" :m-ride)
-	(create-phrasal-pattern "work" :m-destination)
+	(def-phrasal-pattern "Chris" :m-person)
+	(def-phrasal-pattern "bus" :m-bus)
+	(def-phrasal-pattern "rode" :m-ride)
+	(def-phrasal-pattern "work" :m-destination)
 
-	(create-phrasal-pattern "Chris rode the bus to work" 
+	(def-phrasal-pattern "Chris rode the bus to work" 
 			:m-commute-event 
 			(:vehicle "bus") (:commute "rode") (:destination "work"))
-	(create-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
+
+	(def-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
 			:m-commute-event 
 			(:vehicle :m-vehicle) (:commute :m-commute) (:destination :m-destination))
 
