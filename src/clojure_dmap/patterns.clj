@@ -22,6 +22,7 @@
 
 
 (defn load-phrases []
+	;(create-phrasal-pattern (list "Chris") :m-person 0)
 	(def-phrasal-pattern "Chris" :m-person)
 	(def-phrasal-pattern "bus" :m-bus)
 	(def-phrasal-pattern "rode" :m-ride)

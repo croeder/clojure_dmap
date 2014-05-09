@@ -6,3 +6,8 @@
 		(println y) ))
 
 (barf 3)
+; no....
+
+(let [x 1 y (+ 2 x)]
+	(println x y))
+
