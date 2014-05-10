@@ -3,6 +3,9 @@
 A Clojure port of Will Fitzgerald's small, lisp  dmap project.
 https://github.com/willf/lisp_dmap
 
+Also influenced by related content I found here:
+http://www.cs.northwestern.edu/academics/courses/325/index.php
+
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
