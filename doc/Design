@@ -1,12 +1,14 @@
 
 
-*Ontology Entries: FRAMES*
+##Ontology Entries: FRAMES
 In this vresion the ontology is kept in frames. These are structure
 with attributes called slots and specialization (derivation) and
 abstraction (base class) links to other frames. There is special
 code for this rather than defstructs so they can be dynamically
 created. The symbols used in patterns are names of entries here.
-Example:
+
+
+###Example:
 			(def-frame m-coloured-water-bits (m-water-bits)
 			  (:colour m-colour)
 			  (:object m-water-bits))
@@ -21,8 +23,15 @@ m-coloured-water-bits is-a m-water-bits is-a problem is-a index is-a root.
 		(def-frame m-water-bits (m-problem))
 			(def-frame m-coloured-water-bits (m-water-bits)
 
+## Frame Operations
+- find a frame's specializations and abstractions
+- given a frame and slots, find a matching frame by starting 
+at the given  frame and searching
+up and down the specialization/abstraction hierarchy for frames
+that match the slots.
 
-*Patterns PRHASES*
+
+##Patterns PRHASES
 The patterns don't involve regular expressions and are simply lists
 of words to be matched verbatim except for ontology term referencs. 
 Patterns are distiguished from
@@ -37,7 +46,7 @@ train, pedestrian, bicycle or car.
 (def-phrase m-coloured-water-bits :colour :object)
 
 
-Example Phrase: "problem blue pieces"
+###Example Phrase: "problem blue pieces"
 "problem" matches m-problem, a generalization of m-coloured-water-bits
 "colour" matches m-color for the :colour slot
 "pieces" matches m-water-bits, which fits the :object slot directly
@@ -58,15 +67,20 @@ read the m-problem pattern maybe instantiated, but the m-coloured-water-bits
 pattern is still in play so the game is not over. m-coloured-water-bits
 can use m-problem and the slots.
 
-Q:How do you know when the patterns are over and it it's time to start again?
+### Operations
+- 
+
+### Questions
+- Q:How do you know when the patterns are over and it it's time to start again?
 Do you keep going until you've exhausted all patterns and one (the most
 complex?) matches?
-Q: where does the pattern matching a pattern through specialization
+- Q: where does the pattern matching a pattern through specialization
 come into play code-wise?
-Q: do the slots have order? i.e. do you have to have color before 
+- Q: do the slots have order? i.e. do you have to have color before 
 object if that is the order they come in?
-Q: and isnt' there something special about the :object slot?
+- Q: and isnt' there something special about the :object slot?
 
+### Elaboration
 The phrases/predictions/patterns serve two purposes: to describe
 the pattern statically, and to  store the results of the pattern
 as it's matched. 
@@ -77,11 +91,77 @@ as it's matched.
 - :next - the next token for the system to consider
 
 
-*Search Algorithm*
-Given a token in the input stream, the matcher looks for patterns
+##Search Algorithm
+Given a token in the input stream located in the document at 
+position START, the matcher looks for patterns
 that either start with that token, or that have been started and
 are waiting for this token either literally or as an instance of
-an ontolgy class.  Slots...
+an ontolgy class.  Literal strings in the input are matched
+exactly or literally. Symbols (strings that start with colons)
+refer to ontology items. The matcher must evaluate each token
+in terms of the ontology to identify potential matches used here.
+
+Some ontolgoy terms are simply generalizations of words. The pattern
+mentions a concept instead of an exact word and the ontolgoy lookup
+finds a match. A pattern for "The bus drives down the freeway."
+could be generalized this way to "The :vehicle drives down the
+:road-type." where :road-type includes freeway, highway, street,
+avenue etc.
+
+Other ontology terms include slot references that need to be
+filled. The concept from the example data m-coloured-water-bits
+has no mapping to text, but to matched ontology terms: 
+			  (:colour m-colour)
+			  (:object m-water-bits))
+When a pattern mentions such an ontology term:
+	m-problem m-coloured-water-bits
+It works at a higher level. The term m-coloured-water-bits can't
+be resolved simply by looking at the text by way of the ontology
+terms, it must look at other resovled rules and match by matchign
+resolutions of rules, nto just text.
+
+SO THERE"S THIS ODD HIERARCHY BETWEEN TEXT, ONTOLOGY TERMS, 
+SMPLE-PATTERNS and COMPLEX PATTERNS!!!
+
+Borrowing from the language used in the frames world, relationships
+can be simple or complex: a value or a reference to another slot.
+
+REVISED ALGORITHM
+frames = []
+patterns = {first-->rule}
+active = {next-->rule}
+tokens[] = tokenize(input-text)
+start=0
+
+main()
+past-ont[] ; previous ontolgoy-matches this sentence that may fill slots
+while (start < tokens.length)
+	tok = tokens[start] ; this single token
+	ont[] = frames[tok]  ;all the matches for this token ----------need this one
+	pat[] = patterns[tok]  || active[pat] ; patterns that may advance with this oken
+	
+	for each p : pat
+		p.advance(tok, first, ont)
+
+advance()
+	; if ont is not null, we've done the ontology level
+	; if ont matches the next or first step in this rule
+	; working-memory (?) then has a set of partially matched rules
+    ;   and mathced ontology terms. Use those to advance rules
+    ;   that are waiting on a term
+	; 	 THIS PART IS A LITTLE INVOLVED because now you're not
+	;    just looking token-by-token, but at the sentence as 
+	;   a whole. Not sure how order plays, but you need to be
+	;   able to scan ontology matches, or base-level pattern matches
+	;   to see if they produce filler for a higher-levle pattern.
+	;; NEED TO CLARIFY if a pattern gets filled by simple ontolgoy
+	;; matches (individual tokens)  or by a satisfied rule` (phrases)
+	; in the example above m-coloured-water-bits, seems token-level
+	;
+	; in that case the rule would look at the lsit of ontology matches
+    ; for the tokens, not just the token text, but the token concepts
+    
+
 
   "Advancing a phrasal pattern/prediction means:
    if the predicted phrasal pattern has been completely seen, to reference 
@@ -89,9 +169,122 @@ an ontolgy class.  Slots...
    otherwise, to create a new prediction for the next item in the
    prediction phrasal pattern."
 
+## SPECIFYING SLOTS and FILLING THEM
+two sides of the coin
+
+## SEMANTIC PATTERNS DONT" always involve lexical order, just
+the presence of words, not a particular order. The parse would
+create attirubtes that deal with that in a more general way.
+
+## Use Case: Word Sense Disambiguation
+### draw: render a picture of, or pull from holster?
+- The artist draws a picture. 
+- The cowboy draws his gun.
+ - The artist draws a gun.
+The first two are probably two different definitions you'll 
+find in the dictionary.
+
+### truck: 
+- The truck picked up the garbage. 
+- The truck delivered
+the cement.
+You wont' find these as definitions of truck, but you can be
+more specific. You might have an ontology of vehichles that
+includes the generic truck as well as the two specific versions.
+
+### saw: 
+- I saw the man walking.
+- I cut the board with a saw.
+Grammar may get you pretty far here.
+
+### saw 2: I saw the man with a telescope.
+- did you use the telescope or was the man carrying one?
+This is a fun example, and I believe it shows ambiguous
+language. TODO
+
+### species identification or normalization in biomedical research
+texts discussing proteins. While the CRAFT corpus identifies usage
+of protein names as clearly as can humanly be extracted from the 
+text, it's  not clear that all the reasons for the choices have
+been identified, perhaps due to the limitations of the annotations.
+TODO: dig deeper into what CRAFT has, and where that information
+might come from. This seems like a difficult problem because often
+different species are studied because of their commonalities
+with human and differentiating charactersitics may not be germaine
+to  the discussion...and so, not present. Crude methods have been
+used to try to solve this problem like choosing the species mention
+closest to the protein mention, or choosing the first species
+mention in the paper (Verspoor). That paper didn't look to see
+how the species is made clear or from what parts of the paper the
+species is deduced. The question about CRAFT above touches on 
+askiing if the annotation guidelines are detailed enough to capture
+this information. At least, CRAFT might be a source of examples
+to examine more closely.
+
+## Use Case: Anaphora Resolution (?)
+AFAIK Anaphora are places where sentences or phrases refer to
+each other. In "The police arrested the man who caused the trouble."
+there is a connection between the arrested man and the trouble
+causing man. Getting down to the linguistic structures, it revolves
+around resolving what "who" is meant to refer to. That example
+uses a pronoun. You might also need ontology to solve it. 
+"The president nearly got impeached. Clinton was involved in
+inapropriate behavior with an intern." An ontolgoy would connect
+Clinton and "the president", whereas you might get pretty far with
+a parse on the previous example. (though, you might get better
+resules if you connect trouble with impeach as well. The second
+sentence could be a non-sequitor.
+
+## Use Case: More complex inference and resolution
+I don't know if Anaphora includes doing this across sentences as 
+in a classic example from Livingston's thesis: A bomb went off in 
+the Beirut airport. The blast killed 12 people. This has ontology 
+navigation written all over it. A blast isn't a kind of bomb or 
+vice-versa, so it's not just climbing or descending an 
+abstraction/specialization hierarchy. You have know that bomb's 
+create blasts and infer an intermediate  structure that might
+have been explicitly stated with the phrase "the bomb's blast..."
+or the "The bomb created a large blast."
+
+### creating more general patterns to find or bootstrap rules
+like auto-slog, making use of dependency parses
 
 
-DEV STAGES
- - simple literal patterns
+# Machine Learning vs Pattern Learning, or knowledge-based approaches
+ 
+## machine learning is finding the rules statistically and fighting
+the long tail, non? You still need the features.
+
+## feature discovery for machine learning can be one of statistical
+significance as in ML, but if you're consciosuly looking for an
+explanation of the mechanism, you'll get there as well.
+Chomsky would say to start with the mechanism. Noriving says
+start with what works. Once you have a working feature set,
+you may have more clues to the mechanism...
+
+===================================================
+
+### Structures
+Obviously a collection of frames and related patterns will be necessary,
+but a run-time collection of active, partially matched  frames will be
+necessary as well.
+
+
+#DEV STAGES
+- simple literal patterns
 - simple patterns
-- layered patterns w
+- complex patterns where you search up and down the abs/spec hierarchy
+  to find the right frame for the slots you have
+--> re-implement using predicates and a triple store for the knowledge base
+--> consider using a reasoner, write the patterns in predicates
+  this shifts much into the domain of logic as data to be reasoned over
+  away from functional lisp/clojure. The lower level work then becomes
+  part of the choice of reasoner, or how you write one.
+- more complex or loose patterns where you allow crossing from one
+  branch of ontology hierarchy to another. For example if you hav
+  a car with an open bed for carrying things, that's a truck.
+  Not 100%, but could find some interesting results. 
+  Q: Has anyone considered this or gotten results with it?
+- anaphora reference: the man who got arrested
+- layered patterns , using episodic memory, cross-sentence
+- inference, like the bomb-blast issue

@@ -1,6 +1,7 @@
 
 
-; (reduce fn val col)
+; (reduce fn[val col] init-val val-coll)
+; -or-  (reduce fn[accumulator val] init-val val-coll)
 ; (conj col thing)
 
 (def data (list 9 7 5 3 1 ))

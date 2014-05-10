@@ -1,10 +1,3 @@
-
-
-
-;; alter-var-root ????
-
-
-;; need macros
 ;; how do you set a global var in  an immutable world?
 ;; ...in a stateless world? bindings?
 ;; A log is a list of statements keyed off a symbolic form.
@@ -14,6 +7,8 @@
 ;;   but also at the with-logging level for local custom settings
 ;; use assoc with the log-of hash to add entries
 ;;------------------------------------------------------------------------------
+
+(ns clojure_dmap.utilities.logging)
 
 ; what fun.s to export?
 ;; reset-log

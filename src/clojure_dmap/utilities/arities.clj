@@ -1,3 +1,4 @@
+(ns clojure_dmap.utilities.arities)
 
 (defn arities 
 	"tells how many items in structures"

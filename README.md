@@ -1,14 +1,17 @@
 # clojure-dmap
 
-A Clojure port of Will Fitzgerald's small, lisp  dmap project.
+A Clojure port (more/less) of Will Fitzgerald's small, lisp  dmap project.
 https://github.com/willf/lisp_dmap
 
-Also influenced by related content I found here:
-http://www.cs.northwestern.edu/academics/courses/325/index.php
-
+More info here from Chris Riesbeck: http://www.cs.northwestern.edu/academics/courses/325/index.php
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
+
+## WARNING ##
+This is meant as hobby or demonstartion code. Don't adapt it to
+a web app. I (plan to) use slurp and eval, which would be exposing security
+issues.
 
 ##Introduction
 A Direct Memory Access Parser (DMAP)  is a semantic parser, meaning 
