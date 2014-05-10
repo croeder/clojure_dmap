@@ -1,11 +1,12 @@
 (ns  clojure-dmap.phrasal-patterns
-	(use [ clojure.string ])
+	(use [ clojure.string :exclude [replace reverse]]) 
 )
 
 ; a hash-map of patterns. 
 ; Keys are either the first token of an inactive pattern or the
 ; token or symbol a pattern is waiting on.
 ; Values are lists of patterns waiting on that token.
+
 (def phrasal-patterns-map {})
 
 
@@ -28,8 +29,9 @@
 		  				active-list 
 						(cond (nil? (phrasal-patterns-map active-token)) ()
 							:t 	(phrasal-patterns-map active-token))]
-					(def phrasal-patterns-map
-						(assoc phrasal-patterns-map (remove (fn [x] (= x ptn)) active-list)) )))
+					(do
+						(def phrasal-patterns-map
+						 (assoc phrasal-patterns-map active-token (remove (fn [x] (= x ptn)) active-list)) ))))
 			:t nil))
 
 
@@ -38,7 +40,7 @@
 		  active-list (cond (nil? (phrasal-patterns-map active-token)) ()
 						:t 	(phrasal-patterns-map active-token))]
 		(def phrasal-patterns-map
-				(assoc phrasal-patterns-map (conj active-list ptn)))  ))
+				(assoc phrasal-patterns-map active-token (conj active-list ptn))) ))
 
 (defn create-phrasal-pattern
 	[tokens frame token-index & slots]
@@ -52,6 +54,7 @@
 (defn advance-pattern 
 "takes a token and tries to advance or initiate an instance of a pattern, returns an updated pattern or nil"
 [pattern token]
+; the problem here is taht pattern is a *list* of patterns!!! FIX TODO
 	(cond (= token (nth (:tokens pattern) (:token-index pattern)))
 		(create-phrasal-pattern 
 			(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) )

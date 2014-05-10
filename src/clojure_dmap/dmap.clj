@@ -1,9 +1,10 @@
 (ns clojure-dmap.dmap
  "pattern matching"
 	(use 
-		[ clojure.string ]
+		[ clojure.string :exclude [replace reverse] ] 
 		[ clojure-dmap.frames ]
 		[ clojure-dmap.patterns ] 
+		[ clojure-dmap.phrasal-patterns ]
 ))
 
 ;phrasal-patterns-map
@@ -21,7 +22,7 @@
 				(let [ptn (phrasal-patterns-map tkn)]
 					(cond ptn (def pharsal-patterns-map 
 						(assoc phrasal-patterns-map 
-							(advance-pattern pt tkn)))
+							(advance-pattern ptn tkn)))
 						:t nil)))))
 
 
