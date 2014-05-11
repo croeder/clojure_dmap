@@ -1,35 +1,31 @@
 (ns clojure-dmap.dmap
  "pattern matching"
 	(use 
-		[ clojure.string :exclude [replace reverse] ] 
-		[ clojure-dmap.frames ]
-		[ clojure-dmap.patterns ] 
-		[ clojure-dmap.phrasal-patterns ]
+		[clojure.string :exclude [replace reverse]] 
+		[clojure-dmap.frames]
+		[clojure-dmap.patterns] 
+		[clojure-dmap.phrasal-patterns]
 ))
 
-;phrasal-patterns-map
-
-
-;; yo start here
-;; - 1 can you find a pattern for the toekn
-;; - if so, adanvace it
-;; - if the adavance was nil, oh well
-;; - it the adanvace returns the rule, replace it in the map
-
 (defn match-patterns [input]
-	(let [ tokens (split input #"\s") ]
-			(doseq [tkn tokens]
-				(let [ptn (phrasal-patterns-map tkn)]
-					(cond ptn (def pharsal-patterns-map 
-						(assoc phrasal-patterns-map 
-							(advance-pattern ptn tkn)))
-						:t nil)))))
-
+	(let [tokens (split input #"\s")]
+		(doseq [tkn tokens]
+			(println "dmap token:" tkn)
+			(doseq [pattern (phrasal-patterns-map tkn)]
+				(println "dmap pattern:" pattern)
+				(let [ x  (advance-pattern pattern tkn) ]
+					(println "dmap wtf:" x)
+					(add-pattern x))
+				(dump-patterns)
+			)
+		)
+		; need to check for matched frames completing rules
+))
 
 (defn -main [& args] 
 	(load-frames) 
 	(load-phrases)
+	(match-patterns "x y z.")	
+	(dump-patterns)
 	(match-patterns "Chris rode the bus to work.")	
 )
-
-

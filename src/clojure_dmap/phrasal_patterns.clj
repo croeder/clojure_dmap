@@ -19,46 +19,70 @@
 
 (defstruct phrasal-pattern :tokens :frame :slots :token-index)
 
-(defn add-pattern [ptn]
+(defn dump-patterns []
+	(println "-- patterns --")
+	(doseq  [ rule-list (keys phrasal-patterns-map)]
+		(doseq [ rule (phrasal-patterns-map rule-list)]
+			(println rule)
+			(println "------------"))))
+	
+(defn complete-pattern?
+"a pattern is complete if its token-index is > the number of tokens: if it's been advanced as far as possible."
+[pattern]
+	(>= (:token-index pattern) (.size (:tokens pattern))))
+
+
+(defn add-pattern 
+[ptn]
 	; remove ptn from list for past token, unless it's the first token
+	(println "phrasal-patterns add-pattern:" ptn )
 	(let [prev-index (- (ptn :token-index) 1)]
 		(cond (> prev-index 0)
 			(do 
-				(let 	[active-token 
+				(let [  active-token 
 						(nth (ptn :tokens) prev-index)
 		  				active-list 
 						(cond (nil? (phrasal-patterns-map active-token)) ()
 							:t 	(phrasal-patterns-map active-token))]
 					(do
 						(def phrasal-patterns-map
-						 (assoc phrasal-patterns-map active-token (remove (fn [x] (= x ptn)) active-list)) ))))
+						   (assoc phrasal-patterns-map active-token (remove (fn [x] (= x ptn)) active-list)) ))))
 			:t nil))
 
+	; add ptn to list for current token, unless that was the last one
+	(cond (not (complete-pattern? ptn))
+		(let [active-token (nth (ptn :tokens) (ptn :token-index) )
+			  active-list (cond (nil? (phrasal-patterns-map active-token)) ()
+							:t 	(phrasal-patterns-map active-token))]
+			(def phrasal-patterns-map
+					(assoc phrasal-patterns-map active-token (conj active-list ptn))) ))
+	ptn)
 
-	; add ptn to list for current token
-	(let [active-token (nth (ptn :tokens) (ptn :token-index))
-		  active-list (cond (nil? (phrasal-patterns-map active-token)) ()
-						:t 	(phrasal-patterns-map active-token))]
-		(def phrasal-patterns-map
-				(assoc phrasal-patterns-map active-token (conj active-list ptn))) ))
 
 (defn create-phrasal-pattern
 	[tokens frame token-index & slots]
-			(add-pattern (struct phrasal-pattern tokens frame slots token-index)))
+		(add-pattern (struct phrasal-pattern tokens frame slots token-index)))
 
-(defmacro def-phrasal-pattern
+
+;;(defmacro def-phrasal-pattern
+(defn def-phrasal-pattern
 	[token-string frame & slots]
 	(create-phrasal-pattern  (split token-string #"\s") frame 0 slots ))
+
 
 
 (defn advance-pattern 
 "takes a token and tries to advance or initiate an instance of a pattern, returns an updated pattern or nil"
 [pattern token]
-; the problem here is taht pattern is a *list* of patterns!!! FIX TODO
-	(cond (= token (nth (:tokens pattern) (:token-index pattern)))
-		(create-phrasal-pattern 
-			(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) )
-		:t nil))
+	(cond (and  (not (complete-pattern? pattern))
+				(= token (nth (:tokens pattern) (:token-index pattern))))
+		(do
+			(let [ x (create-phrasal-pattern 
+						(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) ) ]
+				(do (println "advance-pattern WTF:" x) x)))
+		:t (do (println "advance pattern returning nil") nil)))
+
+
 			
 	
 

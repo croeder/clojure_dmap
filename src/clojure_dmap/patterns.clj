@@ -23,6 +23,9 @@
 
 (defn load-phrases []
 	;(create-phrasal-pattern (list "Chris") :m-person 0)
+	;(create-phrasal-pattern (list "Chris" "rode" "the" "bus" "to" "work") :m-commute-event 0 (:vehicle "bus") (:commute "rode") (:destination "work"))
+
+
 	(def-phrasal-pattern "Chris" :m-person)
 	(def-phrasal-pattern "bus" :m-bus)
 	(def-phrasal-pattern "rode" :m-ride)
@@ -32,9 +35,9 @@
 			:m-commute-event 
 			(:vehicle "bus") (:commute "rode") (:destination "work"))
 
-	(def-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
-			:m-commute-event 
-			(:vehicle :m-vehicle) (:commute :m-commute) (:destination :m-destination))
+;	(def-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
+;			:m-commute-event 
+;			(:vehicle :m-vehicle) (:commute :m-commute) (:destination :m-destination))
 
 )
 

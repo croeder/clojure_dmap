@@ -47,7 +47,6 @@
 				
 			)}
 	[frame-name slot-list value-list specializations abstractions] 
-		(println "*** creating frname *** : " frame-name)
 		(def frame-of 
 			(assoc frame-of frame-name 
 			  (struct frame  
