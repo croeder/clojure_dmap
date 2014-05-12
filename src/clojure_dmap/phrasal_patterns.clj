@@ -8,6 +8,7 @@
 ; Values are lists of patterns waiting on that token.
 
 (def phrasal-patterns-map {})
+(def completed-patterns {})
 
 
 ; a phrasal pattern is used to define and run or advance pattern discovery
@@ -26,6 +27,12 @@
 			(println rule)
 			(println "------------"))))
 	
+(defn dump-completed-patterns []
+	(println "-- completed patterns --")
+	(doseq  [ key (keys completed-patterns)]
+			(println key (completed-patterns key))
+			(println "------------")))
+	
 (defn complete-pattern?
 "a pattern is complete if its token-index is > the number of tokens: if it's been advanced as far as possible."
 [pattern]
@@ -35,7 +42,6 @@
 (defn add-pattern 
 [ptn]
 	; remove ptn from list for past token, unless it's the first token
-	;;(println "phrasal-patterns add-pattern:" ptn )
 	(let [prev-index (- (ptn :token-index) 1)]
 		(cond (> prev-index 0)
 			(do 
@@ -54,8 +60,12 @@
 		(let [active-token (nth (ptn :tokens) (ptn :token-index) )
 			  active-list (cond (nil? (phrasal-patterns-map active-token)) ()
 							:t 	(phrasal-patterns-map active-token))]
-			(def phrasal-patterns-map
-					(assoc phrasal-patterns-map active-token (conj active-list ptn))) ))
+			(do
+				(def phrasal-patterns-map
+					(assoc phrasal-patterns-map active-token (conj active-list ptn))) 
+			)  )
+		:t (def completed-patterns (assoc completed-patterns (ptn :frame) ptn))
+	)
 	ptn)
 
 
@@ -79,8 +89,10 @@
 		(do
 			(let [ x (create-phrasal-pattern 
 						(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) ) ]
+				(do (println "advance pattern......" x)
 					x))
-		:t (do (println "advance pattern returning nil") nil)))
+				)
+		:t (do (println "advance pattern returning ***nil***") nil)))
 
 
 			

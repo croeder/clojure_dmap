@@ -14,7 +14,7 @@
 			(doseq [pattern (phrasal-patterns-map tkn)]
 				(let [ x  (advance-pattern pattern tkn) ]
 					(add-pattern x)
-					(println "advanced pattern: " x)) )
+				) )
 		)
 		; need to check for matched frames completing rules
 ))
@@ -22,8 +22,8 @@
 (defn -main [& args] 
 	(load-frames) 
 	(load-phrases)
-	(match-patterns "Chris rode the bus to work.")	
-	(println "======================================= end")
+	(match-patterns "Chris rode the bus to work")	
 	(println "======================================= end")
 	(dump-patterns)
+	(dump-completed-patterns)
 )
