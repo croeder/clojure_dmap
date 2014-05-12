@@ -35,7 +35,7 @@
 (defn add-pattern 
 [ptn]
 	; remove ptn from list for past token, unless it's the first token
-	(println "phrasal-patterns add-pattern:" ptn )
+	;;(println "phrasal-patterns add-pattern:" ptn )
 	(let [prev-index (- (ptn :token-index) 1)]
 		(cond (> prev-index 0)
 			(do 
@@ -60,14 +60,14 @@
 
 
 (defn create-phrasal-pattern
-	[tokens frame token-index & slots]
-		(add-pattern (struct phrasal-pattern tokens frame slots token-index)))
+	[tokens frame token-index slots]
+		(struct phrasal-pattern tokens frame slots token-index) )
 
 
 ;;(defmacro def-phrasal-pattern
 (defn def-phrasal-pattern
 	[token-string frame & slots]
-	(create-phrasal-pattern  (split token-string #"\s") frame 0 slots ))
+	(add-pattern (create-phrasal-pattern  (split token-string #"\s") frame 0 slots )))
 
 
 
@@ -79,7 +79,7 @@
 		(do
 			(let [ x (create-phrasal-pattern 
 						(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) ) ]
-				(do (println "advance-pattern WTF:" x) x)))
+					x))
 		:t (do (println "advance pattern returning nil") nil)))
 
 

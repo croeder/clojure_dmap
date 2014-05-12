@@ -25,19 +25,18 @@
 	;(create-phrasal-pattern (list "Chris") :m-person 0)
 	;(create-phrasal-pattern (list "Chris" "rode" "the" "bus" "to" "work") :m-commute-event 0 (:vehicle "bus") (:commute "rode") (:destination "work"))
 
-
 	(def-phrasal-pattern "Chris" :m-person)
 	(def-phrasal-pattern "bus" :m-bus)
 	(def-phrasal-pattern "rode" :m-ride)
 	(def-phrasal-pattern "work" :m-destination)
 
-	(def-phrasal-pattern "Chris rode the bus to work" 
-			:m-commute-event 
-			(:vehicle "bus") (:commute "rode") (:destination "work"))
+;	(def-phrasal-pattern "Chris rode the bus to work" 
+;			:m-commute-event 
+;			(list :vehicle "bus") (list :commute "rode") (list :destination "work"))
 
 ;	(def-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
 ;			:m-commute-event 
-;			(:vehicle :m-vehicle) (:commute :m-commute) (:destination :m-destination))
+;			(list :vehicle :m-vehicle) (list :commute :m-commute) (list :destination :m-destination))
 
 )
 
