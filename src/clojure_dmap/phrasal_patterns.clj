@@ -2,6 +2,9 @@
 	(use [ clojure.string :exclude [replace reverse]]) 
 )
 
+; TODO the symbols don't match right, nor is their use apropriately described using the implemenation detail of symbol any good
+
+
 ; a hash-map of patterns. 
 ; Keys are either the first token of an inactive pattern or the
 ; token or symbol a pattern is waiting on.
@@ -22,10 +25,9 @@
 
 (defn dump-patterns []
 	(println "-- patterns --")
-	(doseq  [ rule-list (keys phrasal-patterns-map)]
-		(doseq [ rule (phrasal-patterns-map rule-list)]
-			(println rule)
-			(println "------------"))))
+	(doseq  [ key (keys phrasal-patterns-map)]
+		(doseq [ rule (phrasal-patterns-map key)]
+			(println "key: " key " rule: " rule) )))
 	
 (defn dump-completed-patterns []
 	(println "-- completed patterns --")
@@ -84,16 +86,33 @@
 (defn advance-pattern 
 "takes a token and tries to advance or initiate an instance of a pattern, returns an updated pattern or nil"
 [pattern token]
+	(if (keyword? token) (println " KEYWORD  on advance" token ))
 	(cond (and  (not (complete-pattern? pattern))
 				(= token (nth (:tokens pattern) (:token-index pattern))))
 		(do
+			(if (keyword? token) (println " advancing KEYWORD  on token" token " pattern" pattern))
 			(let [ x (create-phrasal-pattern 
 						(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) ) ]
-				(do (println "advance pattern......" x)
+				(do 
+					;(println "advance pattern......" x)
 					x))
 				)
 		:t (do (println "advance pattern returning ***nil***") nil)))
 
+
+(defn propagate-advances []
+"after rules are advanced, new symbols may be satisfied. 
+This goes through the list of symbols and tries to satisfy the other rules. "
+	(doseq [sym (keys completed-patterns)]
+			(if (keyword? sym) (println "   propagate-advance symbol:" sym))
+			(doseq [rule (phrasal-patterns-map sym)]
+				(if (keyword? sym) (println "  RULE" rule))
+				;(println " *&^%$#    prop rule:" rule)
+				(let [adv-rule (advance-pattern rule sym)]
+					(println "    advanced on symbol:" sym " rule: " adv-rule)
+					(add-pattern adv-rule)
+				))))
+		
 
 			
 	

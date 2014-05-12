@@ -9,8 +9,10 @@ Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
 
 ## WARNING ##
-This is meant as hobby or demonstartion code. Don't adapt it to
-a web app. I (plan to) use slurp and eval, which would be exposing security
+This is meant as hobby or demonstration code. I'm learning both
+Clojure and the details of simple DMAP implementations by writing
+this. Don't pick up my bad habbits.  Don't adapt it to
+a web app. I might use slurp and eval, which would be exposing security
 issues.
 
 ##Introduction

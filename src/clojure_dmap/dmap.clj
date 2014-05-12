@@ -8,12 +8,15 @@
 ))
 
 (defn match-patterns [input]
+	(doseq [k (keys phrasal-patterns-map)] (println " from pattern map  key: " k ))
 	(let [tokens (split input #"\s")]
 		(doseq [tkn tokens]
-			(println "dmap token:" tkn)
 			(doseq [pattern (phrasal-patterns-map tkn)]
 				(let [ x  (advance-pattern pattern tkn) ]
+					(if (keyword? x)(println "MATCHING " x))
 					(add-pattern x)
+					(println "PROPOGATING ")
+					(propagate-advances)
 				) )
 		)
 		; need to check for matched frames completing rules
@@ -22,8 +25,11 @@
 (defn -main [& args] 
 	(load-frames) 
 	(load-phrases)
+	(dump-patterns)
+	(println "======================================= end")
 	(match-patterns "Chris rode the bus to work")	
 	(println "======================================= end")
 	(dump-patterns)
+	(println "======================================= end")
 	(dump-completed-patterns)
 )
