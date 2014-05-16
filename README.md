@@ -22,6 +22,14 @@ Have a look at
 - src/clojure_dmap/patterns.clj for concept patterns, 
 - and finally src/clojure_dmap/dmap.clj for the text strings analyzed.
 
+## TODO
+- use real logging
+- fill matched slots
+- find need to run only one phrase per run. 
+- some of the rules aren't created with the usual function
+- some tests are commented out in frame.clj
+--> remvoe old patterns from the hashs
+
 ##Introduction
 A Direct Memory Access Parser (DMAP)  is a semantic parser, meaning 
 the specified patterns are not strictly lexical and include 

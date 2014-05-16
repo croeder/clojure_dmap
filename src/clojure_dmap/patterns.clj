@@ -23,10 +23,15 @@
 
 (defn load-phrases []
 
+	(def-phrasal-pattern "Bob" :m-person)
 	(def-phrasal-pattern "Chris" :m-person)
 	(def-phrasal-pattern "rode" :m-ride)
+	(def-phrasal-pattern "drove" :m-drove)
+	(def-phrasal-pattern "bicycle" :m-bicycle)
+	(def-phrasal-pattern "car" :m-car)
 	(def-phrasal-pattern "bus" :m-bus)
 	(def-phrasal-pattern "work" :m-destination)
+	(def-phrasal-pattern "school" :m-destination)
 
 	(def-phrasal-pattern "Chris rode the bus to work" 
 			:m-commute-event 
