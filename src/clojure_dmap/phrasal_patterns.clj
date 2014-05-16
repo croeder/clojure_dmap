@@ -1,5 +1,6 @@
 (ns  clojure-dmap.phrasal-patterns
-	(use [ clojure.string :exclude [replace reverse]]) 
+	(use [ clojure.string :exclude [replace reverse]]
+		 [ clojure-dmap.utilities.frame ]) 
 )
 
 ; TODO the symbols don't match right, nor is their use apropriately described using the implemenation detail of symbol any good
@@ -63,10 +64,14 @@
 			  active-list (cond (nil? (phrasal-patterns-map active-token)) ()
 							:t 	(phrasal-patterns-map active-token))]
 			(do
+				;;(println " adding pattern on key:" active-token "rule:"  ptn)
 				(def phrasal-patterns-map
 					(assoc phrasal-patterns-map active-token (conj active-list ptn))) 
 			)  )
-		:t (def completed-patterns (assoc completed-patterns (ptn :frame) ptn))
+		:t (do
+				(def completed-patterns (assoc completed-patterns (ptn :frame) ptn))
+				;;(println "completed key:" (ptn :frame) " pattern "  ptn))
+				)
 	)
 	ptn)
 
@@ -86,35 +91,52 @@
 (defn advance-pattern 
 "takes a token and tries to advance or initiate an instance of a pattern, returns an updated pattern or nil"
 [pattern token]
-	(if (keyword? token) (println " KEYWORD  on advance" token ))
+	;;(if (keyword? token) (println " KEYWORD  on advance" token ))
 	(cond (and  (not (complete-pattern? pattern))
 				(= token (nth (:tokens pattern) (:token-index pattern))))
 		(do
-			(if (keyword? token) (println " advancing KEYWORD  on token" token " pattern" pattern))
+			;;(if (keyword? token) (do (println "") (println " advancing KEYWORD  on token" token " pattern" pattern)))
 			(let [ x (create-phrasal-pattern 
 						(:tokens pattern) (:frame pattern) (+ 1 (:token-index pattern)) (:slots pattern) ) ]
 				(do 
-					;(println "advance pattern......" x)
+					;;(println "advanced pattern......" x)
 					x))
 				)
 		:t (do (println "advance pattern returning ***nil***") nil)))
 
 
+		
 (defn propagate-advances []
 "after rules are advanced, new symbols may be satisfied. 
-This goes through the list of symbols and tries to satisfy the other rules. "
+This goes through the list of symbols and tries to satisfy the other rules. 
+It doesn't generalize the symbols by way of the ontology hierarchy"
 	(doseq [sym (keys completed-patterns)]
-			(if (keyword? sym) (println "   propagate-advance symbol:" sym))
 			(doseq [rule (phrasal-patterns-map sym)]
-				(if (keyword? sym) (println "  RULE" rule))
-				;(println " *&^%$#    prop rule:" rule)
 				(let [adv-rule (advance-pattern rule sym)]
-					(println "    advanced on symbol:" sym " rule: " adv-rule)
+					;;(println "PROP:" sym adv-rule)
 					(add-pattern adv-rule)
 				))))
-		
 
-			
+(defn propagate-advances-generalize []
+"after rules are advanced, new symbols may be satisfied. 
+This goes through the list of symbols and tries to satisfy the other rules. 
+It *does* generalize the symbols by way of the ontology hierarchy"
+; find generalizations and specializations of the symbol, then look up a rule for that, and advance it
+; This is where there is room for lots of variation in the matching.
+
+	
+	(let [frames-list ( apply concat
+						(map (fn [ptn] (concat (get-abstractions ptn) (get-specializations ptn)))
+								(keys completed-patterns))) ]
+		(println "FRAMES:" frames-list)
+		(doseq [sym frames-list]
+			(doseq [rule (phrasal-patterns-map sym)]
+				(let [adv-rule (advance-pattern rule sym)]
+					(println "PROP:" sym adv-rule)
+					(add-pattern adv-rule)
+				)))))
+
+
 	
 
 

@@ -15,12 +15,27 @@ this. Don't pick up my bad habbits.  Don't adapt it to
 a web app. I might use slurp and eval, which would be exposing security
 issues.
 
+## Quick Start
+Assuming Leiningen is availabe: lein run
+Have a look at 
+- src/clojure_dmap/frames.clj for the ontology of concepts, 
+- src/clojure_dmap/patterns.clj for concept patterns, 
+- and finally src/clojure_dmap/dmap.clj for the text strings analyzed.
+
 ##Introduction
 A Direct Memory Access Parser (DMAP)  is a semantic parser, meaning 
-the specified patterns are not strictly lexical and can include 
+the specified patterns are not strictly lexical and include 
 smeantic attributes of the components. Whereas a regular expression
-or context free grammar is about combinations of letters, a semantic
-parser lets you refer to entries in an ontology, or access memory. 
+or context free grammar is about combinations of letters (words)  
+	and combinations
+of those combinations (phrases), a semantic
+parser lets you write patterns in terms of concepts rather than 
+the words. At first blush this allows for synonyms, but the ONTOLGOY....
+just represenations of concepts. The patterns are generalized,
+written using
+ids or names of concepts not just one refer to entries in an ontology, or access memory. 
+
+
 The research takes this to many deeper levels  not explored here today.
 Google Roger Schank, Chris Reisbeck, Will Fitzgerald, Larry Hunter,
 and Kevin Livingston  for relevant papers.

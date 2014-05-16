@@ -16,3 +16,7 @@
 (println (reduce (fn [val col] (conj val col))  myset data))
 (println (reduce conj   myset data))
 
+
+(def lists (list (list :a :b) (list :c :d) (list :e :f)))
+(println (apply concat lists))
+;(println (flatten lists))

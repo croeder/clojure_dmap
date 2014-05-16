@@ -22,8 +22,6 @@
 
 
 (defn load-phrases []
-	;(create-phrasal-pattern (list "Chris") :m-person 0 (list))
-	;(create-phrasal-pattern (list "Chris" "rode" "the" "bus" "to" "work") :m-commute-event 0 (list (:vehicle "bus") (:commute "rode") (:destination "work")))
 
 	(def-phrasal-pattern "Chris" :m-person)
 	(def-phrasal-pattern "rode" :m-ride)
@@ -39,13 +37,20 @@
 			(list :m-person :m-ride :m-bus :m-destination) 
 			:m-commute-event2 0 
 			(list (:vehicle "bus") (:commute "rode") (:destination "work"))))
+
 	; gack, this splits into a list of strings that look like symbols, not actual symbols
 	;(def-phrasal-pattern ":m-person :m-ride :m-bus :m-destination" 
 	;		:m-commute-event2 
 	;		(list :vehicle :m-vehicle) (list :commute :m-commute) (list :destination :m-destination))
 
+	(add-pattern
+		(create-phrasal-pattern 
+			[:m-person :m-commute :m-vehicle :m-destination]
+			:m-commute-event3 0 
+			(list (:vehicle "bus") (:commute "rode") (:destination "work"))))
+
 	;(def-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
-	;		:m-commute-event2 
+	;		:m-commute-event3 
 	;		(list :vehicle :m-vehicle) (list :commute :m-commute) (list :destination :m-destination))
 )
 
