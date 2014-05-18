@@ -24,7 +24,7 @@
 ; :slots are the names of slots and their (frame) types
 ; :token-index is the index of the token we're trying to match
 ; so that means that  ome syntactical order is enforced in here
-(defstruct phrasal-pattern :tokens :frame :slots :token-index)
+(defstruct phrasal-pattern :tokens :frame :slots  :token-index )
 
 
 (defn dump-patterns []
@@ -88,9 +88,10 @@ of a pattern, returns an updated pattern or nil"
 [pattern token]
 	(cond (and (not (complete-pattern? pattern))
 				(= token (nth (:tokens pattern) (:token-index pattern))))
-			(create-phrasal-pattern 
+			(do (if (not (empty? (:slots pattern))) (println "advancing with slots:" (:slots pattern)))
+				(create-phrasal-pattern 
 						(:tokens pattern) (:frame pattern) 
-						(+ 1 (:token-index pattern)) (:slots pattern) )
+						(+ 1 (:token-index pattern)) (:slots pattern) ))
 		:t (do (println "advance pattern returning ***nil***") nil)))
 
 		
@@ -101,6 +102,7 @@ It doesn't generalize the symbols by way of the ontology hierarchy"
 	(doseq [sym (keys completed-patterns)]
 			(doseq [rule (phrasal-patterns-map sym)]
 				(let [adv-rule (advance-pattern rule sym)]
+					(println "ADVANCED RULE:" adv-rule)
 					(add-pattern adv-rule) ))))
 
 (defn propagate-advances-generalize []
