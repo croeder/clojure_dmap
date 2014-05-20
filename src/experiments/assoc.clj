@@ -1,6 +1,11 @@
 
 (def mymap nil)
-;;(def mymap {})
 (println (assoc mymap :foo "bar"))
 (println mymap)
-
+(println "----------------- 1")
+(def map2 (assoc {} :foo "bar"))
+(println "----------------- 2")
+(println map2)
+(println "----------------- 3")
+(println (assoc (assoc map2 :foo "barf") :bobby 'fage))
+(println map2)

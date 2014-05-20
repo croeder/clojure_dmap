@@ -33,29 +33,18 @@
 	(def-phrasal-pattern "work" :m-destination)
 	(def-phrasal-pattern "school" :m-destination)
 
-	(def-phrasal-pattern "Chris rode the bus to work" 
-			:m-commute-event 
-			(list :vehicle "bus") (list :commute "rode") (list :destination "work"))
+	;(def-phrasal-pattern "Chris rode the bus to work" :m-commute-event (list :vehicle  :commute  :destination ))
 
-	(add-pattern
-		(create-phrasal-pattern 
-			(list :m-person :m-ride :m-bus :m-destination) 
-			:m-commute-event2 0 
-			(list (:vehicle "bus") (:commute "rode") (:destination "work"))))
-
-	; gack, this splits into a list of strings that look like symbols, not actual symbols
-	;(def-phrasal-pattern ":m-person :m-ride :m-bus :m-destination" 
-	;		:m-commute-event2 
-	;		(list :vehicle :m-vehicle) (list :commute :m-commute) (list :destination :m-destination))
+	;(add-pattern (create-phrasal-pattern (list :m-person :m-ride :m-bus :m-destination) :m-commute-event2 0 (list :vehicle :commute  :destination ) {} ))
 
 	(add-pattern
 		(create-phrasal-pattern 
 			[:m-person :m-commute :m-vehicle :m-destination]
 			:m-commute-event3 0 
-			(list (:vehicle "bus") (:commute "rode") (:destination "work"))))
+			(list :vehicle :commute :destination ) {} ))
 
-	;(def-phrasal-pattern ":m-person :m-commute :m-vehicle :m-destination" 
-	;		:m-commute-event3 
+	; gack, this splits into a list of strings that look like symbols, not actual symbols
+	;(def-phrasal-pattern ":m-person :m-ride :m-bus :m-destination" :m-commute-event2 
 	;		(list :vehicle :m-vehicle) (list :commute :m-commute) (list :destination :m-destination))
 )
 

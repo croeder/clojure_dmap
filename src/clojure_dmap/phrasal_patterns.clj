@@ -21,10 +21,11 @@
 ; a phrasal pattern is used to define and run or advance pattern discovery
 ; :string  is the pattern string
 ; :frame is the name of the frame it fills (or nil)
-; :slots are the names of slots and their (frame) types
+; :slots is a list of types
+; :slots-values is a map of types to filled values (or types?)
 ; :token-index is the index of the token we're trying to match
 ; so that means that  ome syntactical order is enforced in here
-(defstruct phrasal-pattern :tokens :frame :slots  :token-index )
+(defstruct phrasal-pattern :tokens :frame :slots :slot-values  :token-index )
 
 
 (defn dump-patterns []
@@ -73,25 +74,35 @@ and adds it to the list for its current token. Border cases notwithstanding."
 
 
 (defn create-phrasal-pattern
-	[tokens frame token-index slots]
-		(struct phrasal-pattern tokens frame slots token-index) )
+	[tokens frame token-index slots slot-values]
+		(struct phrasal-pattern tokens frame slots slot-values token-index) )
 
 
 (defn def-phrasal-pattern
 	[token-string frame & slots]
-	(add-pattern (create-phrasal-pattern  (split token-string #"\s") frame 0 slots )))
+	(add-pattern (create-phrasal-pattern  (split token-string #"\s") frame 0 slots {} )))
 
 
 (defn advance-pattern 
 "Takes a token and tries to advance or initiate an instance 
 of a pattern, returns an updated pattern or nil"
-[pattern token]
+[pattern concept value]
 	(cond (and (not (complete-pattern? pattern))
-				(= token (nth (:tokens pattern) (:token-index pattern))))
-			(do (if (not (empty? (:slots pattern))) (println "advancing with slots:" (:slots pattern)))
+				(= concept (nth (:tokens pattern) (:token-index pattern))))
+			(do 
+				(def i (:token-index pattern))
+
 				(create-phrasal-pattern 
-						(:tokens pattern) (:frame pattern) 
-						(+ 1 (:token-index pattern)) (:slots pattern) ))
+						(:tokens pattern) 
+						(:frame pattern) 
+						(+ 1 (:token-index pattern)) 
+						(:slots pattern) 
+						
+						; TODO: why does i need save above?
+						(assoc (:slot-values pattern) (nth (:tokens pattern) i) value)
+						;(assoc 	(:slot-vlaues pattern) (nth (:tokens pattern) (:token-index pattern)) value )
+
+				  ))
 		:t (do (println "advance pattern returning ***nil***") nil)))
 
 		
@@ -101,9 +112,10 @@ This goes through the list of symbols and tries to satisfy the other rules.
 It doesn't generalize the symbols by way of the ontology hierarchy"
 	(doseq [sym (keys completed-patterns)]
 			(doseq [rule (phrasal-patterns-map sym)]
-				(let [adv-rule (advance-pattern rule sym)]
-					(println "ADVANCED RULE:" adv-rule)
+				(let [matched-value (:slot-values (sym completed-patterns))
+						adv-rule (advance-pattern rule sym matched-value)] ; FIX
 					(add-pattern adv-rule) ))))
+
 
 (defn propagate-advances-generalize []
 "After rules are advanced, new symbols may be satisfied.  This 
@@ -117,7 +129,9 @@ It *does* generalize the symbols by way of the ontology hierarchy"
 								(keys completed-patterns))) ]
 		(doseq [sym frames-list]
 			(doseq [rule (phrasal-patterns-map sym)]
-				(let [adv-rule (advance-pattern rule sym)]
+				(let [matched-value (:slot-values (sym completed-patterns))
+						adv-rule (advance-pattern rule sym matched-value )] ; FIX
+					;;(println "ADV:" adv-rule matched-value)
 					(add-pattern adv-rule)
 				)))))
 

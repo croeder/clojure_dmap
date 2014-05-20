@@ -13,35 +13,23 @@
 
 (defn match-patterns [input]
 "Go through the tokens of the input string matching rules and propagating matches."
-
-	(println input)
 	(let [tokens (split input #"\s")]
 		(doseq [tkn tokens]
 			(doseq [pattern (phrasal-patterns-map tkn)]
-				(let [ x  (advance-pattern pattern tkn) ]
+				(let [ x  (advance-pattern pattern tkn tkn) ]
 					(add-pattern x)
 					(propagate-advances)
-					(propagate-advances-generalize)
-				) )
-		)
-		; need to check for matched frames completing rules
-))
+					(propagate-advances-generalize)) ) )) )
 
 (defn reset-patterns  []
 	(reset)
 	(load-frames)
-	(load-phrases))
+	(load-phrases) )
 
 
 (defn -main [& args] 
-;	(load-frames) (load-phrases)
-	
-	(reset-patterns) (match-patterns "Chris rode the bus to work")	
-	(dump-completed-patterns)
-	(reset-patterns) (match-patterns "Chris drove the car to school")	
-	(dump-completed-patterns)
-	(reset-patterns) (match-patterns "Chris rode his bicycle to school")	
-	(dump-completed-patterns)
-	(reset-patterns) (match-patterns "Bob smoked his cigs on the bus")	
-	(dump-completed-patterns)
+	;(reset-patterns) (match-patterns "Chris rode the bus to work")		(dump-completed-patterns)
+	;(reset-patterns) (match-patterns "Chris drove the car to school")	(dump-completed-patterns)
+	(reset-patterns) (match-patterns "Chris rode his bicycle to school")	(dump-completed-patterns)
+	;(reset-patterns) (match-patterns "Bob smoked his cigs on the bus")	(dump-completed-patterns) 
 )
