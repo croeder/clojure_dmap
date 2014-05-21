@@ -4,11 +4,6 @@
 		 [ clojure-dmap.utilities.frame ]) 
 )
 
-; functions relating to and collecting phrasal patterns.
-; a phrasal-pattern is a list of tokens to match. A token
-; is either a literal or a keyword that names a frame produced
-; by a rule or names a frame related to such a rule in the ontology.
-
 (def phrasal-patterns-map {})
 (def completed-patterns {})
 
@@ -18,22 +13,29 @@
 	(def completed-patterns {}) 
 	(println ""))
 
-; a phrasal pattern is used to define and run or advance pattern discovery
-; :string  is the pattern string
-; :frame is the name of the frame it fills (or nil)
-; :slots is a list of types
-; :slots-values is a map of types to filled values (or types?)
+; A phrasal pattern is used to define and run or advance pattern discovery.
+; It's simplest form is a list of literals to be matched. Clojure
+; keyword syntax is used to identify concepts to be matched.
+; :string  is the pattern string consisting of unquoted literals or keywords
+; :frame is the name of the frame it fills or creates 
+; :slots is a list of types whose values are to be collected (ACTUALLY UNUSED FIX TOODO)
+; :slots-values is a map of types to filled values. Any reasoning-like
+;   behavior to arrive at the value using the ontology or other
+;   rules is not preserved.
 ; :token-index is the index of the token we're trying to match
-; so that means that  ome syntactical order is enforced in here
 (defstruct phrasal-pattern :tokens :frame :slots :slot-values  :token-index )
 
 
-(defn dump-patterns []
+(defn dump-patterns 
+"print the list of known patterns"
+[]
 	(doseq  [ key (keys phrasal-patterns-map)]
 		(doseq [ rule (phrasal-patterns-map key)]
 			(println "key: " key " rule: " rule) )))
 	
-(defn dump-completed-patterns []
+(defn dump-completed-patterns 
+"print the list of completed patterns"
+[]
 	(doseq  [ key (keys completed-patterns)]
 			(println key (completed-patterns key)) ))
 	
@@ -74,36 +76,60 @@ and adds it to the list for its current token. Border cases notwithstanding."
 
 
 (defn create-phrasal-pattern
-	[tokens frame token-index slots slot-values]
-		(struct phrasal-pattern tokens frame slots slot-values token-index) )
+"function for creating patterns, a place to localize common behavior. Historical. REMVOE?"
+[tokens frame token-index slots slot-values]
+	(struct phrasal-pattern tokens frame slots slot-values token-index) )
 
 
 (defn def-phrasal-pattern
-	[token-string frame & slots]
+"for creating patterns with a shorter/simpler list of arguments"
+[token-string frame & slots]
 	(add-pattern (create-phrasal-pattern  (split token-string #"\s") frame 0 slots {} )))
 
 
-(defn advance-pattern 
-"Takes a token and tries to advance or initiate an instance 
-of a pattern, returns an updated pattern or nil"
-[pattern concept value]
-	(cond (and (not (complete-pattern? pattern))
-				(= concept (nth (:tokens pattern) (:token-index pattern))))
+(defn advance-pattern-literal
+""
+[pattern literal]
+	(cond 
+		(and (not (complete-pattern? pattern))
+				(= literal (nth (:tokens pattern) (:token-index pattern))))
 			(do 
 				(def i (:token-index pattern))
-
 				(create-phrasal-pattern 
 						(:tokens pattern) 
 						(:frame pattern) 
 						(+ 1 (:token-index pattern)) 
 						(:slots pattern) 
-						
-						; TODO: why does i need save above?
-						(assoc (:slot-values pattern) (nth (:tokens pattern) i) value)
-						;(assoc 	(:slot-vlaues pattern) (nth (:tokens pattern) (:token-index pattern)) value )
+						(assoc (:slot-values pattern) (pattern :frame) literal) ))
+		:t nil
+	))
+		;:t (do (println "advance pattern returning ***nil***") nil)))
+		
 
-				  ))
-		:t (do (println "advance pattern returning ***nil***") nil)))
+ 
+(defn advance-pattern-concept 
+"Tries to advance or initiate an instance of a pattern based
+on the concept/symbol passed in, returns an updated pattern or nil"
+[pattern slot]
+	(cond 
+		(and (not (complete-pattern? pattern))
+				(= (first (keys slot)) (nth (:tokens pattern) (:token-index pattern))))
+			(do 
+				(def i (:token-index pattern))
+				(let [pp 
+					(create-phrasal-pattern 
+						(:tokens pattern) 
+						(:frame pattern) 
+						(+ 1 (:token-index pattern)) 
+						(:slots pattern) 
+						(merge (:slot-values pattern)  slot)
+						; TODO: why does i need save above?
+						;(assoc 	(:slot-vlaues pattern) (nth (:tokens pattern) (:token-index pattern)) value )
+				  )]
+					;;(println "concept advanced pattern" pp)
+					pp  ))
+		:t  nil))
+		;:t (do (println "advance pattern returning ***nil***") nil)))
 
 		
 (defn propagate-advances []
@@ -112,15 +138,20 @@ This goes through the list of symbols and tries to satisfy the other rules.
 It doesn't generalize the symbols by way of the ontology hierarchy"
 	(doseq [sym (keys completed-patterns)]
 			(doseq [rule (phrasal-patterns-map sym)]
-				(let [matched-value (:slot-values (sym completed-patterns))
-						adv-rule (advance-pattern rule sym matched-value)] ; FIX
+				(let [matched-sym (:slot-values (sym completed-patterns))
+					  matched-value  (rule :slot-values)
+						adv-rule (advance-pattern-concept rule  matched-sym)] ; FIX doesnt'w ork consistenly either
+					;;(println "GEN:  matched-sym:" matched-sym )
 					(add-pattern adv-rule) ))))
 
+
+;; these lists get the more advanced concepts, but don't includde a value
 
 (defn propagate-advances-generalize []
 "After rules are advanced, new symbols may be satisfied.  This 
 goes through the list of symbols and tries to satisfy the other rules. 
-It *does* generalize the symbols by way of the ontology hierarchy"
+The matching happens in advance-pattern, this is just throwing spaghetti
+against that wall."
 ; find generalizations and specializations of the symbol, 
 ; then look up a rule for that, and advance it. This is where 
 ; there is room for lots of variation in the matching.
@@ -129,13 +160,26 @@ It *does* generalize the symbols by way of the ontology hierarchy"
 								(keys completed-patterns))) ]
 		(doseq [sym frames-list]
 			(doseq [rule (phrasal-patterns-map sym)]
-				(let [matched-value (:slot-values (sym completed-patterns))
-						adv-rule (advance-pattern rule sym matched-value )] ; FIX
-					;;(println "ADV:" adv-rule matched-value)
-					(add-pattern adv-rule)
-				)))))
+				(let [matched-sym (:slot-values (sym completed-patterns))
+					  matched-value  (rule :slot-values)
+					  adv-rule (advance-pattern-concept rule matched-sym )] ; FIX
+					;(println "ADV:" sym matched-sym matched-value)
+					(cond adv-rule (add-pattern adv-rule))
+				))
+)))
 
 
-	
-
+(defn match-patterns [input]
+"Go through the tokens of the input string matching rules and propagating matches."
+	(println "INPUT: " input)
+	(let [tokens (split input #"\s")]
+		(doseq [tkn tokens]
+			(doseq [pattern (phrasal-patterns-map tkn)]
+				;(let [ x  (advance-pattern pattern (pattern :frame) tkn) ]
+				(let [ x  (advance-pattern-literal pattern tkn) ]
+					(add-pattern x)
+				))
+				(propagate-advances)
+				(propagate-advances-generalize) 
+			)))
 

@@ -9,3 +9,8 @@
 (println "----------------- 3")
 (println (assoc (assoc map2 :foo "barf") :bobby 'fage))
 (println map2)
+(println "----------------- 3")
+(println "----------------- 3")
+
+(def map3 (assoc {} :bar "baz"))
+(println (merge map2 map3))
