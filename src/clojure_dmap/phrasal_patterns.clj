@@ -18,12 +18,11 @@
 ; keyword syntax is used to identify concepts to be matched.
 ; :string  is the pattern string consisting of unquoted literals or keywords
 ; :frame is the name of the frame it fills or creates 
-; :slots is a list of types whose values are to be collected (ACTUALLY UNUSED FIX TOODO)
 ; :slots-values is a map of types to filled values. Any reasoning-like
 ;   behavior to arrive at the value using the ontology or other
 ;   rules is not preserved.
 ; :token-index is the index of the token we're trying to match
-(defstruct phrasal-pattern :tokens :frame :slots :slot-values  :token-index )
+(defstruct phrasal-pattern :tokens :frame :slot-values  :token-index )
 
 
 (defn dump-patterns 
@@ -77,14 +76,14 @@ and adds it to the list for its current token. Border cases notwithstanding."
 
 (defn create-phrasal-pattern
 "function for creating patterns, a place to localize common behavior. Historical. REMVOE?"
-[tokens frame token-index slots slot-values]
-	(struct phrasal-pattern tokens frame slots slot-values token-index) )
+[tokens frame token-index  slot-values]
+	(struct phrasal-pattern tokens frame slot-values token-index) )
 
 
 (defn def-phrasal-pattern
 "for creating patterns with a shorter/simpler list of arguments"
-[token-string frame & slots]
-	(add-pattern (create-phrasal-pattern  (split token-string #"\s") frame 0 slots {} )))
+[token-string frame ]
+	(add-pattern (create-phrasal-pattern  (split token-string #"\s") frame 0  {} )))
 
 
 (defn advance-pattern-literal
@@ -99,7 +98,6 @@ and adds it to the list for its current token. Border cases notwithstanding."
 						(:tokens pattern) 
 						(:frame pattern) 
 						(+ 1 (:token-index pattern)) 
-						(:slots pattern) 
 						(assoc (:slot-values pattern) (pattern :frame) literal) ))
 		:t nil
 	))
@@ -121,7 +119,6 @@ on the concept/symbol passed in, returns an updated pattern or nil"
 						(:tokens pattern) 
 						(:frame pattern) 
 						(+ 1 (:token-index pattern)) 
-						(:slots pattern) 
 						(merge (:slot-values pattern)  slot)
 						; TODO: why does i need save above?
 						;(assoc 	(:slot-vlaues pattern) (nth (:tokens pattern) (:token-index pattern)) value )
