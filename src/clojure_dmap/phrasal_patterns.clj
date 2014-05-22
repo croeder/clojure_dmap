@@ -87,20 +87,26 @@ and adds it to the list for its current token. Border cases notwithstanding."
 
 
 (defn advance-pattern-literal
-""
-[pattern literal]
+"Advances a pattern with a literal. Works for patterns with a single
+literal where the slot name comes from the pattern. Literal parts of longer
+patterns present a problem: what slot name to use?
+I will use the pattern name, but make the value a list"
+[pattern  literal]
 	(cond 
-		(and (not (complete-pattern? pattern))
-				(= literal (nth (:tokens pattern) (:token-index pattern))))
-			(do 
-				(def i (:token-index pattern))
-				(create-phrasal-pattern 
+		(and (not (keyword? literal))
+			(and (not (complete-pattern? pattern))
+					(= literal (nth (:tokens pattern) (:token-index pattern)))))
+				(do 
+					(def i (:token-index pattern))
+					(println "advance-literal slots:" (:slot-values pattern) " frame:" (pattern :frame) " literal:" literal) 
+					(create-phrasal-pattern 
 						(:tokens pattern) 
 						(:frame pattern) 
 						(+ 1 (:token-index pattern)) 
-						(assoc (:slot-values pattern) (pattern :frame) literal) ))
-		:t nil
-	))
+						(assoc (:slot-values pattern) 
+							(pattern :frame) 
+							(conj ((pattern :slot-values) (pattern :frame)) literal)))) 
+		:t nil))
 		;:t (do (println "advance pattern returning ***nil***") nil)))
 		
 
@@ -138,7 +144,7 @@ It doesn't generalize the symbols by way of the ontology hierarchy"
 				(let [matched-sym (:slot-values (sym completed-patterns))
 					  matched-value  (rule :slot-values)
 						adv-rule (advance-pattern-concept rule  matched-sym)] ; FIX doesnt'w ork consistenly either
-					;;(println "GEN:  matched-sym:" matched-sym )
+					;(println "GEN:  matched-sym:" matched-sym (rule :frame))
 					(add-pattern adv-rule) ))))
 
 
@@ -177,6 +183,6 @@ against that wall."
 					(add-pattern x)
 				))
 				(propagate-advances)
-				(propagate-advances-generalize) 
+				;(propagate-advances-generalize) 
 			)))
 
