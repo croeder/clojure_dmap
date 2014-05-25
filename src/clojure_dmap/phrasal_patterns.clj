@@ -176,7 +176,7 @@ It doesn't generalize the symbols by way of the ontology hierarchy"
 			(doseq [rule (*phrasal-patterns-map* sym)]
 				(let [matched-sym (:slot-values (sym *completed-patterns*))
 					  matched-value  (rule :slot-values)
-						adv-rule (advance-pattern-concept rule  matched-sym)] ; FIX doesnt'w ork consistenly either
+						adv-rule (advance-pattern-concept rule  matched-sym)] ;
 					;(println "GEN:  matched-sym:" matched-sym (rule :frame))
 					(add-pattern adv-rule) ))))
 
@@ -194,13 +194,18 @@ against that wall."
 	(let [frames-list ( apply concat
 						(map (fn [ptn] (concat (get-abstractions ptn) (get-specializations ptn)))
 								(keys *completed-patterns*))) ]
+		(println "") 
+		(println "completed:" (keys *completed-patterns*) " abs/spec:" frames-list )
+		(println "waiting keys:" (keys *phrasal-patterns-map*))
 		(doseq [sym frames-list]
+			(println "  attempting with:" sym)
 			(doseq [rule (*phrasal-patterns-map* sym)]
+				(println "    on rule named " (rule :frame) " waiting on " (nth (rule :tokens) (rule :token-index)) )
 				(let [matched-sym (:slot-values (sym *completed-patterns*))
 					  matched-value  (rule :slot-values)
-					  adv-rule (advance-pattern-concept rule matched-sym )] ; FIX
-					;(println "ADV:" sym matched-sym matched-value)
-					(cond adv-rule (add-pattern adv-rule))
+					  ;adv-rule (advance-pattern-concept rule matched-sym )] ; FIX
+					  adv-rule (advance-pattern-concept rule {sym nil} )] ; FIX
+					(cond rule (add-pattern rule))
 				))
 )))
 
@@ -218,6 +223,6 @@ against that wall."
 					(add-pattern x)
 				))
 				(propagate-advances)
-				;(propagate-advances-generalize) 
+				(propagate-advances-generalize) 
 			)))
 
