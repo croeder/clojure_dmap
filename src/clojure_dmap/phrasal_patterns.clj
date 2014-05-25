@@ -47,7 +47,12 @@ tokens: if it's been advanced as far as possible."
 
 (defn add-pattern 
 "removes a pattern from the list associated with it's previous token
-and adds it to the list for its current token. Border cases notwithstanding."
+and adds it to the list for its current token. Border cases notwithstanding.
+There's a comment in Dr Farrell's work about how advancing a rule takes
+a different meaning based on the type of the token: literal or symbol.
+It appears here when the pattern is completed and added to the 
+completed-patterns list. It must be a symbol/keyword there for lookup.
+"
 [ptn]
 	; remove ptn from list for past token, unless it's the first token
 	(let [prev-index (- (ptn :token-index) 1)]
