@@ -194,18 +194,16 @@ against that wall."
 	(let [frames-list ( apply concat
 						(map (fn [ptn] (concat (get-abstractions ptn) (get-specializations ptn)))
 								(keys *completed-patterns*))) ]
+		(println "      completed:" (keys *completed-patterns*) " abs/spec:" frames-list )
+		;(println "waiting keys:" (keys *phrasal-patterns-map*))
 		(println "") 
-		(println "completed:" (keys *completed-patterns*) " abs/spec:" frames-list )
-		(println "waiting keys:" (keys *phrasal-patterns-map*))
 		(doseq [sym frames-list]
-			(println "  attempting with:" sym)
 			(doseq [rule (*phrasal-patterns-map* sym)]
-				(println "    on rule named " (rule :frame) " waiting on " (nth (rule :tokens) (rule :token-index)) )
 				(let [matched-sym (:slot-values (sym *completed-patterns*))
 					  matched-value  (rule :slot-values)
 					  ;adv-rule (advance-pattern-concept rule matched-sym )] ; FIX
 					  adv-rule (advance-pattern-concept rule {sym nil} )] ; FIX
-					(cond rule (add-pattern rule))
+					(cond rule (add-pattern adv-rule))
 				))
 )))
 

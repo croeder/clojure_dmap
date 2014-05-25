@@ -33,12 +33,10 @@
 	(def-phrasal-pattern "work" :m-destination)
 	(def-phrasal-pattern "school" :m-destination)
 
-	;(def-phrasal-pattern "Chris rode the bus to work" :m-commute-event )
-	;(add-pattern (create-phrasal-pattern (list :m-person :m-ride :m-bus :m-destination) :m-commute-event2 0  {} ) )
-	(add-pattern (create-phrasal-pattern [:m-person :m-commute :m-vehicle :m-destination] :m-commute-event3 0  {} ) )
+	(def-phrasal-pattern "Chris rode the bus to work" :m-commute-event-1 )
+	(add-pattern (create-phrasal-pattern (list :m-person :m-ride :m-bus :m-destination) :m-commute-event-2 0  {} ) )
+	(add-pattern (create-phrasal-pattern [:m-person :m-commute :m-vehicle :m-destination] :m-commute-event-3 0  {} ) )
 
-	;(add-pattern (create-phrasal-pattern (list :m-person :m-ride :m-bus :m-destination) :m-commute-event2 0  {} ) :m-commute-event2)
-	;(add-pattern (create-phrasal-pattern [:m-person :m-commute :m-vehicle :m-destination] :m-commute-event3 0  {} ) :m-commute-event3)
 
 	; gack, this splits into a list of strings that look like symbols, not actual symbols
 	;(def-phrasal-pattern ":m-person :m-ride :m-bus :m-destination" :m-commute-event2 
