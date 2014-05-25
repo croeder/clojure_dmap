@@ -18,8 +18,8 @@
 
 
 (defn -main [& args] 
-	;(reset-patterns) (match-patterns "Chris rode the bus to work")		(dump-completed-patterns)
-	(reset-patterns) (match-patterns "Chris drove the car to school")	(dump-completed-patterns)
+	(reset-patterns) (match-patterns "Chris rode the bus to work")		(dump-completed-patterns)
+	;(reset-patterns) (match-patterns "Chris drove the car to school")	(dump-completed-patterns)
 	;(reset-patterns) (match-patterns "Chris rode his bicycle to school")	(dump-completed-patterns)
 	;(reset-patterns) (match-patterns "Bob smoked his cigs on the bus")	(dump-completed-patterns) 
 )

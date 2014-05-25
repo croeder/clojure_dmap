@@ -4,13 +4,27 @@
 		 [ clojure-dmap.utilities.frame ]) 
 )
 
-(def phrasal-patterns-map {})
-(def completed-patterns {})
+;;;;; phrasal-patterns
+;;;;;
+; TODO;
+; remove use of rule in favor of pattern
+; remove use of *tother* in favor of concept
+; remove use of create-pattern or whatever
+; fix up tabs
+; fxi up comments by ; ;; ;;;, ;;;;; etc.
+; fix up public/private functions #_
+; fix up ears for dynamic variables (done)
+; indent arg vectors and comment strings
+; that annoying todo below about needing i computed before hand
+
+	
+(def ^:dynamic *phrasal-patterns-map* {})
+(def ^:dynamic *completed-patterns* {})
 
 
 (defn reset []
-	(def phrasal-patterns-map {})
-	(def completed-patterns {}) 
+	(def *phrasal-patterns-map* {})
+	(def *completed-patterns* {}) 
 	(println ""))
 
 ; A phrasal pattern is used to define and run or advance pattern discovery.
@@ -28,15 +42,15 @@
 (defn dump-patterns 
 "print the list of known patterns"
 []
-	(doseq  [ key (keys phrasal-patterns-map)]
-		(doseq [ rule (phrasal-patterns-map key)]
+	(doseq  [ key (keys *phrasal-patterns-map*)]
+		(doseq [ rule (*phrasal-patterns-map* key)]
 			(println "key: " key " rule: " rule) )))
 	
 (defn dump-completed-patterns 
 "print the list of completed patterns"
 []
-	(doseq  [ key (keys completed-patterns)]
-			(println key (completed-patterns key)) ))
+	(doseq  [ key (keys *completed-patterns*)]
+			(println key (*completed-patterns* key)) ))
 	
 (defn complete-pattern?
 "a pattern is complete if its token-index is > the number of 
@@ -51,31 +65,34 @@ and adds it to the list for its current token. Border cases notwithstanding.
 There's a comment in Dr Farrell's work about how advancing a rule takes
 a different meaning based on the type of the token: literal or symbol.
 It appears here when the pattern is completed and added to the 
-completed-patterns list. It must be a symbol/keyword there for lookup.
+*completed-patterns* list. It must be a symbol/keyword there for lookup.
 "
 [ptn]
 	; remove ptn from list for past token, unless it's the first token
-	(let [prev-index (- (ptn :token-index) 1)]
-		(cond (> prev-index 0)
+	(let [prev-index (- (ptn :token-index) 1)] 
+		(cond 
+			(> prev-index 0)
 			(let [  active-token 
 					(nth (ptn :tokens) prev-index)
 	  				active-list 
-					(cond (nil? (phrasal-patterns-map active-token)) ()
-						:t 	(phrasal-patterns-map active-token))]
-				(def phrasal-patterns-map
-			   		(assoc phrasal-patterns-map active-token 
-						(remove (fn [x] (= x ptn)) active-list)) ))
-			:t nil))
+					(cond (nil? (*phrasal-patterns-map* active-token)) ()
+						:t 	(*phrasal-patterns-map* active-token))]
+
+				(def *phrasal-patterns-map*
+			   			(assoc *phrasal-patterns-map* active-token 
+						(remove (fn [x] (= (x :token-index) (- (ptn :token-index) 1))) active-list)) ) )
+			:t 
+			nil))
 
 	; add ptn to list for current token, unless that was the last one
 	(cond (not (complete-pattern? ptn))
 		(let [active-token (nth (ptn :tokens) (ptn :token-index) )
-			  active-list (cond (nil? (phrasal-patterns-map active-token)) ()
-							:t 	(phrasal-patterns-map active-token))]
-			(def phrasal-patterns-map
-					(assoc phrasal-patterns-map active-token (conj active-list ptn))) )
+			  active-list (cond (nil? (*phrasal-patterns-map* active-token)) ()
+							:t 	(*phrasal-patterns-map* active-token))]
+			(def *phrasal-patterns-map*
+					(assoc *phrasal-patterns-map* active-token (conj active-list ptn))) )
 		:t 
-			(def completed-patterns (assoc completed-patterns (ptn :frame) ptn)) )
+			(def *completed-patterns* (assoc *completed-patterns* (ptn :frame) ptn)) )
 	ptn)
 
 
@@ -101,16 +118,21 @@ I will use the pattern name, but make the value a list"
 		(and (not (keyword? literal))
 			(and (not (complete-pattern? pattern))
 					(= literal (nth (:tokens pattern) (:token-index pattern)))))
-				(do 
-					(def i (:token-index pattern))
-					(println "advance-literal slots:" (:slot-values pattern) " frame:" (pattern :frame) " literal:" literal) 
-					(create-phrasal-pattern 
-						(:tokens pattern) 
-						(:frame pattern) 
-						(+ 1 (:token-index pattern)) 
-						(assoc (:slot-values pattern) 
-							(pattern :frame) 
-							(conj ((pattern :slot-values) (pattern :frame)) literal)))) 
+		(do 
+			(def i (:token-index pattern))
+			(print "      advance-literal slots:" (:slot-values pattern) " frame:" (pattern :frame) " literal:" literal) 
+			(let [retval (create-phrasal-pattern 
+				(:tokens pattern) 
+				(:frame pattern) 
+				(+ 1 (:token-index pattern)) 
+				(assoc (:slot-values pattern) 
+					(pattern :frame) 
+					(conj ((pattern :slot-values) (pattern :frame)) literal))) ]
+				(if (complete-pattern? retval) 
+					(println " is complete.")
+					(println " is waiting for " (retval :token-index) 
+							(nth (retval :tokens) (retval :token-index)) ))
+				retval))
 		:t nil))
 		;:t (do (println "advance pattern returning ***nil***") nil)))
 		
@@ -125,6 +147,7 @@ on the concept/symbol passed in, returns an updated pattern or nil"
 				(= (first (keys slot)) (nth (:tokens pattern) (:token-index pattern))))
 			(do 
 				(def i (:token-index pattern))
+				(print "      advance-concept slots:" (:slot-values pattern) " frame:" (pattern :frame) " slot:" slot)
 				(let [pp 
 					(create-phrasal-pattern 
 						(:tokens pattern) 
@@ -134,6 +157,11 @@ on the concept/symbol passed in, returns an updated pattern or nil"
 						; TODO: why does i need save above?
 						;(assoc 	(:slot-vlaues pattern) (nth (:tokens pattern) (:token-index pattern)) value )
 				  )]
+					(if (complete-pattern? pp) 
+						(println " " (pp :frame) " is complete.")
+						(println " " (pp :frame) " is waiting for " 
+							(pp :token-index) 
+							(nth (pp :tokens) (pp :token-index)) ))
 					;;(println "concept advanced pattern" pp)
 					pp  ))
 		:t  nil))
@@ -144,9 +172,9 @@ on the concept/symbol passed in, returns an updated pattern or nil"
 "After rules are advanced, new symbols may be satisfied. 
 This goes through the list of symbols and tries to satisfy the other rules. 
 It doesn't generalize the symbols by way of the ontology hierarchy"
-	(doseq [sym (keys completed-patterns)]
-			(doseq [rule (phrasal-patterns-map sym)]
-				(let [matched-sym (:slot-values (sym completed-patterns))
+	(doseq [sym (keys *completed-patterns*)]
+			(doseq [rule (*phrasal-patterns-map* sym)]
+				(let [matched-sym (:slot-values (sym *completed-patterns*))
 					  matched-value  (rule :slot-values)
 						adv-rule (advance-pattern-concept rule  matched-sym)] ; FIX doesnt'w ork consistenly either
 					;(println "GEN:  matched-sym:" matched-sym (rule :frame))
@@ -165,10 +193,10 @@ against that wall."
 ; there is room for lots of variation in the matching.
 	(let [frames-list ( apply concat
 						(map (fn [ptn] (concat (get-abstractions ptn) (get-specializations ptn)))
-								(keys completed-patterns))) ]
+								(keys *completed-patterns*))) ]
 		(doseq [sym frames-list]
-			(doseq [rule (phrasal-patterns-map sym)]
-				(let [matched-sym (:slot-values (sym completed-patterns))
+			(doseq [rule (*phrasal-patterns-map* sym)]
+				(let [matched-sym (:slot-values (sym *completed-patterns*))
 					  matched-value  (rule :slot-values)
 					  adv-rule (advance-pattern-concept rule matched-sym )] ; FIX
 					;(println "ADV:" sym matched-sym matched-value)
@@ -182,7 +210,9 @@ against that wall."
 	(println "INPUT: " input)
 	(let [tokens (split input #"\s")]
 		(doseq [tkn tokens]
-			(doseq [pattern (phrasal-patterns-map tkn)]
+			(println "  token:" tkn)
+			(doseq [pattern (*phrasal-patterns-map* tkn)]
+				(println "    ptn:" (pattern :frame))
 				;(let [ x  (advance-pattern pattern (pattern :frame) tkn) ]
 				(let [ x  (advance-pattern-literal pattern tkn) ]
 					(add-pattern x)
