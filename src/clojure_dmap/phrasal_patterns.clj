@@ -8,7 +8,7 @@
 ;;;;;
 ; TODO;
 ; remove use of rule in favor of pattern
-; remove use of *tother* in favor of concept
+; remove use of *other* in favor of concept
 ; remove use of create-pattern or whatever
 ; fix up tabs
 ; fxi up comments by ; ;; ;;;, ;;;;; etc.
@@ -16,15 +16,16 @@
 ; fix up ears for dynamic variables (done)
 ; indent arg vectors and comment strings
 ; that annoying todo below about needing i computed before hand
-
+; testing 
+; logging
 	
 (def ^:dynamic *phrasal-patterns-map* {})
 (def ^:dynamic *completed-patterns* {})
 
 
 (defn reset []
-	(def *phrasal-patterns-map* {})
-	(def *completed-patterns* {}) 
+	(def ^:dynamic *phrasal-patterns-map* {})
+	(def ^:dynamic *completed-patterns* {}) 
 	(println ""))
 
 ; A phrasal pattern is used to define and run or advance pattern discovery.
@@ -120,7 +121,7 @@ I will use the pattern name, but make the value a list"
 					(= literal (nth (:tokens pattern) (:token-index pattern)))))
 		(do 
 			(def i (:token-index pattern))
-			(print "      advance-literal slots:" (:slot-values pattern) " frame:" (pattern :frame) " literal:" literal) 
+			#_(print "      advance-literal slots:" (:slot-values pattern) " frame:" (pattern :frame) " literal:" literal) 
 			(let [retval (create-phrasal-pattern 
 				(:tokens pattern) 
 				(:frame pattern) 
@@ -128,10 +129,9 @@ I will use the pattern name, but make the value a list"
 				(assoc (:slot-values pattern) 
 					(pattern :frame) 
 					(conj ((pattern :slot-values) (pattern :frame)) literal))) ]
-				(if (complete-pattern? retval) 
-					(println " is complete.")
-					(println " is waiting for " (retval :token-index) 
-							(nth (retval :tokens) (retval :token-index)) ))
+				;(if (complete-pattern? retval) 
+				;	(println " is complete.")
+				;(println " is waiting for " (retval :token-index) (nth (retval :tokens) (retval :token-index)) ))
 				retval))
 		:t nil))
 		;:t (do (println "advance pattern returning ***nil***") nil)))
@@ -147,7 +147,7 @@ on the concept/symbol passed in, returns an updated pattern or nil"
 				(= (first (keys slot)) (nth (:tokens pattern) (:token-index pattern))))
 			(do 
 				(def i (:token-index pattern))
-				(print "      advance-concept slots:" (:slot-values pattern) " frame:" (pattern :frame) " slot:" slot)
+				#_(print "      advance-concept slots:" (:slot-values pattern) " frame:" (pattern :frame) " slot:" slot)
 				(let [pp 
 					(create-phrasal-pattern 
 						(:tokens pattern) 
@@ -157,11 +157,11 @@ on the concept/symbol passed in, returns an updated pattern or nil"
 						; TODO: why does i need save above?
 						;(assoc 	(:slot-vlaues pattern) (nth (:tokens pattern) (:token-index pattern)) value )
 				  )]
-					(if (complete-pattern? pp) 
-						(println " " (pp :frame) " is complete.")
-						(println " " (pp :frame) " is waiting for " 
-							(pp :token-index) 
-							(nth (pp :tokens) (pp :token-index)) ))
+					;(if (complete-pattern? pp) 
+						;(println " " (pp :frame) " is complete.")
+						;(println " " (pp :frame) " is waiting for " 
+						;	(pp :token-index) 
+						;	(nth (pp :tokens) (pp :token-index)) ))
 					;;(println "concept advanced pattern" pp)
 					pp  ))
 		:t  nil))
@@ -215,7 +215,7 @@ against that wall."
 		(doseq [tkn tokens]
 			(println "  token:" tkn)
 			(doseq [pattern (*phrasal-patterns-map* tkn)]
-				(println "    ptn:" (pattern :frame))
+				#_(println "    ptn:" (pattern :frame))
 				;(let [ x  (advance-pattern pattern (pattern :frame) tkn) ]
 				(let [ x  (advance-pattern-literal pattern tkn) ]
 					(add-pattern x)
