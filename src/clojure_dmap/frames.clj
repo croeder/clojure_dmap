@@ -37,7 +37,7 @@
 		(def-frame :m-safe :m-index)
 
 	(def-frame :m-person :m-root (list))
-	(def-frame :m-vehiocle :m-root (list))
+	(def-frame :m-vehicle :m-root (list))
 		(def-frame :m-bus  		:m-vehicle (list))
 		(def-frame :m-car  		:m-vehicle (list))
 		(def-frame :m-bicycle  	:m-vehicle (list))
@@ -53,5 +53,9 @@
 			(def-frame :m-home :m-destination (list))
 			(def-frame :m-school :m-destination (list))
 	(def-frame :m-event :m-root (list))
+
 		(def-frame :m-commute-event (list :m-event :event) (list :m-vehicle :vehicle) (list :m-commute :commute) (list :m-destination :destination))
+
+	(def-frame :m-purchase-event (list ) (list ) (list) (list))
 )
+	;;;(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-color :m-type :m-vehicle] :m-purchase-event {}))

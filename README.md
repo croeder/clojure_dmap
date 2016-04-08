@@ -37,11 +37,15 @@ This implementation started with a lisp project Wil Fitzgerald wrote.  The goals
 ###Patterns
 The patterns don't involve regular expressions and are simply lists of words to be matched verbatim. Patterns are distiguished from ontology references by the use of symbol notation: a colon prefix.  For example "Chris uses :vehicle transportation to commute to work." would refer to an ontology class :vehicle that that includes bus, train, pedestrian, bicycle or car.
 
-###Ontology Entries
-In this vresion the ontology is kept in frames. These are structure with attributes called slots and specialization (derivation) and abstraction (base class) links to other frames. There is special code for this rather than defstructs so they can be dynamically created. The symbols used in patterns are names of entries here.
+There are also more complicatd patterns that assemble sentencs from the words or concepts in the more simple patterns mentioned above.
+
+### Frames or Ontology Entries
+In this vresion the ontology is kept in frames. These are structure with attributes called slots and specialization (derivation) and abstraction (base class) links to other frames. There is special code for this rather than defstructs so they can be dynamically created. The symbols used in patterns are names of entries here. In the examples here , a frame usually contains information very similar to what a single sentence would hold. There's lots to be said about ontology design, and more to be said about how to harvest the information across sentences.
 
 ###Search Algorithm
 Given a token in the input stream, the matcher looks for patterns that either start with that token, or that have been started and are waiting for this token as the next part of the pattern. The rules are search for start words, and a list of rules in progress is maintained in a hash keyed by the next required token.
+
+#### filling the frames...as the rules are finished...
 
 ##Future Work
 - add regular expressions

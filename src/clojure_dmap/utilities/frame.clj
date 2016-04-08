@@ -19,7 +19,11 @@
 (defn create-frame	
 "Creates a frame as a struct with a :name and a lsit of :feature.  :specializations and :abstractions are part of a dynamic inheritance hierarchy. Their values are lists of symbols to other frames.  stuff is a list of two lists specializations then abstractsion "
 	{:test #(do 
-				(def a (create-frame :test-frame-a (list :slot1 :slot2 :slot3) (list "a" "b" "c") (list :spec1 :spec2) (list :abs1 :abs2)))
+				(def a (create-frame :test-frame-a 
+							(list :slot1 :slot2 :slot3)  ; features
+							(list "a" "b" "c") 			 ; feature values
+							(list :spec1 :spec2) 		 ; specialization
+							(list :abs1 :abs2))) 		 ; abstractions
 				(def x (:test-frame-a frame-of))
 				(assert  (not (nil? x)))
 				(assert (= (:name x) :test-frame-a))
@@ -35,7 +39,6 @@
 				(assert (= (:specializations y) (list)))
 				(assert (= (:abstractions y) (list)))
 
-			; maybe not the best place for these tests...
 				(create-frame :new-person (list :fname :lname :mi) (list "Bob" "Jones" "X") (list) (list))
 				(create-frame :base-thing (list :dbid :mode) (list 123 :test) (list) (list))
 				(create-frame :new-director (list :company :title :salary) (list "The" "Director" 1000000) (list :new-person) (list :base-thing))

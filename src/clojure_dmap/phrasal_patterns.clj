@@ -10,6 +10,7 @@
 ; remove use of rule in favor of pattern
 ; remove use of *other* in favor of concept
 ; remove use of create-pattern or whatever
+;
 ; fix up tabs
 ; fxi up comments by ; ;; ;;;, ;;;;; etc.
 ; fix up public/private functions #_
@@ -21,7 +22,6 @@
 	
 (def ^:dynamic *phrasal-patterns-map* {})
 (def ^:dynamic *completed-patterns* {})
-
 
 (defn reset []
 	(def ^:dynamic *phrasal-patterns-map* {})
@@ -129,13 +129,13 @@ I will use the pattern name, but make the value a list"
 				(assoc (:slot-values pattern) 
 					(pattern :frame) 
 					(conj ((pattern :slot-values) (pattern :frame)) literal))) ]
-				;(if (complete-pattern? retval) 
-				;	(println " is complete.")
-				;(println " is waiting for " (retval :token-index) (nth (retval :tokens) (retval :token-index)) ))
+				(if (complete-pattern? retval) 
+					(println " is complete.")
+				(println " is waiting for " (retval :token-index) (nth (retval :tokens) (retval :token-index)) ))
 				retval))
 		:t nil))
 		;:t (do (println "advance pattern returning ***nil***") nil)))
-		
+	
 
  
 (defn advance-pattern-concept 
@@ -195,7 +195,7 @@ against that wall."
 						(map (fn [ptn] (concat (get-abstractions ptn) (get-specializations ptn)))
 								(keys *completed-patterns*))) ]
 		(println "      completed:" (keys *completed-patterns*) " abs/spec:" frames-list )
-		;(println "waiting keys:" (keys *phrasal-patterns-map*))
+		(println "waiting keys:" (keys *phrasal-patterns-map*))
 		(println "") 
 		(doseq [sym frames-list]
 			(doseq [rule (*phrasal-patterns-map* sym)]
