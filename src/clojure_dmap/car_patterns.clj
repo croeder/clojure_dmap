@@ -39,11 +39,18 @@
 
 ;;Bob bought a red Ford Fusion
 	(add-pattern (create-phrasal-pattern [:m-make :m-model] :m-type 0 {}))
-	(add-pattern (create-phrasal-pattern [:m-year :m-make :m-model] :m-vehicle-a 0 {}))
-	(add-pattern (create-phrasal-pattern [:m-year :m-type] :m-vehicle-b 0 {}))
-	(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-color :m-type :m-vehicle-a] :m-purchase-event-a  0   {}))
-	(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-color :m-type :m-vehicle-b] :m-purchase-event-b  0   {}))
+
 	;;(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-color :m-make :m-model] :m-purchase-event  0   {}))
+
+	;; a
+	(add-pattern (create-phrasal-pattern [:m-year :m-make :m-model] :m-vehicle 0 {}))
+
+	;;(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-color :m-type :m-vehicle] :m-purchase-event  0   {}))
+	(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-type  :m-vehicle] :m-purchase-event  0   {}))
+
+	;; b
+	;;(add-pattern (create-phrasal-pattern [:m-year :m-type] :m-vehicle-b 0 {}))
+	;;(add-pattern (create-phrasal-pattern [:m-person :m-purchase :m-color :m-type :m-vehicle-b] :m-purchase-event-b  0   {}))
 
 
 	; gack, this splits into a list of strings that look like symbols, not actual symbols
